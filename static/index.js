@@ -1,9 +1,6 @@
 var temperatureHistoryDiv = document.getElementById("temperature-history");
 var humidityHistoryDiv = document.getElementById("humidity-history");
 
-var temperatureGaugeDiv = document.getElementById("temperature-gauge");
-var humidityGaugeDiv = document.getElementById("humidity-gauge");
-
 var graphConfig = {
   displayModeBar: false,
   responsive: true,
@@ -117,9 +114,6 @@ var humidityData = [
 
 var layout = { width: 350, height: 250, margin: { t: 0, b: 0, l: 0, r: 0 } };
 
-Plotly.newPlot(temperatureGaugeDiv, temperatureData, layout, graphConfig);
-Plotly.newPlot(humidityGaugeDiv, humidityData, layout, graphConfig);
-
 // Temperature
 let newTempXArray = [];
 let newTempYArray = [];
@@ -137,18 +131,6 @@ function updateBoxes(temperature, humidity) {
 
   temperatureDiv.innerHTML = temperature + " C";
   humidityDiv.innerHTML = humidity + " %";
-}
-
-function updateGauge(temperature, humidity) {
-  var temperature_update = {
-    value: temperature,
-  };
-  var humidity_update = {
-    value: humidity,
-  };
-
-  Plotly.update(temperatureGaugeDiv, temperature_update);
-  Plotly.update(humidityGaugeDiv, humidity_update);
 }
 
 function updateCharts(lineChartDiv, xArray, yArray, sensorRead) {
@@ -172,13 +154,12 @@ function updateCharts(lineChartDiv, xArray, yArray, sensorRead) {
   Plotly.update(lineChartDiv, data_update);
 }
 
-function updateSensorReadings(jsonResponse) {
-  let temperature = jsonResponse.temperature.toFixed(2);
-  let humidity = jsonResponse.humidity.toFixed(2);
+function updateWeatherData(jsonResponse) {
+  let temperature = jsonResponse.temperature.toFixed(1);
+  let humidity = jsonResponse.humidity.toFixed(1);
+  let pressure = jsonResponse.pressure.toFixed(0);
 
   updateBoxes(temperature, humidity);
-
-  updateGauge(temperature, humidity);
 
   // Update Temperature Line Chart
   updateCharts(
@@ -198,11 +179,11 @@ function updateSensorReadings(jsonResponse) {
 /*
   SocketIO Code
 */
-//   var socket = io.connect("http://" + document.domain + ":" + location.port);
 var socket = io.connect();
 
 //receive details from server
-socket.on("updateSensorData", function (msg) {
-  var sensorReadings = JSON.parse(msg);
-  updateSensorReadings(sensorReadings);
+socket.on("weatherData", function (msg) {
+  console.log(msg)
+  var weather_data = JSON.parse(msg);
+  updateWeatherData(weather_data);
 });

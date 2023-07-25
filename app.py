@@ -4,17 +4,36 @@ from flask_socketio import SocketIO
 from random import random
 from threading import Lock
 from datetime import datetime
-from dht22_module import DHT22Module
+from mqtt_module import mqttModule
 import board
 
-dht22_module = DHT22Module(board.D18)
+
+mqtt_module=mqttModule()
 
 thread = None
 thread_lock = Lock()
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "donsky!"
+app.config["SECRET_KEY"] = "asfdwe"
 socketio = SocketIO(app, cors_allowed_origins="*")
+
+
+
+def topic_weather(msg_json):
+    upd={}
+    upd["temperature"]=msg_json["dht"]["temperature"]
+    upd["humidity"]=msg_json["dht"]["humidity"]
+    upd["pressure"]=msg_json["bmp180"]["pressure"]
+    upd["battery"]=3
+    upd["lighting"]=3
+    upd["rssi"]=-49
+
+    sensor_json = json.dumps(upd)
+
+    socketio.emit("weatherData", sensor_json)
+    pass
+
+mqtt_module.subscribe("stat/weather",topic_weather)
 
 """
 Background Thread
@@ -23,14 +42,7 @@ Background Thread
 
 def background_thread():
     while True:
-        temperature, humidity = dht22_module.get_sensor_readings()
-        sensor_readings = {
-            "temperature": temperature,
-            "humidity": humidity,
-        }
-        sensor_json = json.dumps(sensor_readings)
-
-        socketio.emit("updateSensorData", sensor_json)
+        mqtt_module.loop()
         socketio.sleep(3)
 
 
@@ -53,6 +65,7 @@ Decorator for connect
 def connect():
     global thread
     print("Client connected")
+    socketio.emit("wholeData", {})
 
     with thread_lock:
         if thread is None:
@@ -67,6 +80,7 @@ Decorator for disconnect
 @socketio.on("disconnect")
 def disconnect():
     print("Client disconnected", request.sid)
+
 
 
 # if __name__ == "__main__":
