@@ -15,6 +15,7 @@ class mqttModule:
         self._client.connect(mqtt_server, mqtt_port)
         self.on_connection_changes=self._on_connection_changes
         self._subscribtion=dict()
+        self._client.loop_start()
         pass
 
     def _on_connection_changes(self,state):
@@ -47,10 +48,6 @@ class mqttModule:
         print("disconnecting reason  "  +str(rc))
         self.on_connection_changes(False)
         self._client.connect(mqtt_server, mqtt_port)
-        pass
-
-    def loop(self):
-        self._client.loop()
         pass
 
     def _subscribe(self,topic):

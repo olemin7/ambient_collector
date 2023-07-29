@@ -42,7 +42,6 @@ Background Thread
 
 def background_thread():
     while True:
-        mqtt_module.loop()
         socketio.sleep(3)
 
 
@@ -63,9 +62,13 @@ Decorator for connect
 
 @socketio.on("connect")
 def connect():
+    global thread
     print("Client connected")
     socketio.emit("wholeData", {})
-
+ 
+    with thread_lock:
+        if thread is None:
+            thread = socketio.start_background_task(background_thread)
 
 
 """

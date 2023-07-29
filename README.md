@@ -45,3 +45,11 @@ https://github.com/donskytech/dht22-weather-station-python-flask-socketio-multip
   
 ### How to auto-start this project when your Raspberry Pi boots or starts?  
 https://www.donskytech.com/raspberry-pi-how-to-start-python-script-on-boot/
+
+
+sudo cp weather_stantion.service /etc/systemd/system/weather_stantion.service
+sudo systemctl daemon-reload
+sudo systemctl start weather_stantion.service
+sudo systemctl status weather_stantion.service
+sudo systemctl enable weather_stantion.service
+journalctl -u weather_stantion.service -f

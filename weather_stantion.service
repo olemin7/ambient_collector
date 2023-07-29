@@ -1,0 +1,12 @@
+[Unit]
+Description=Weather Station Server
+After=network.target
+
+[Service]
+User=olemin
+WorkingDirectory=/home/olemin/weather_station_server
+ExecStart=/home/olemin/weather_station_server/.venv/bin/gunicorn -b 0.0.0.0:8080 -w 2 app:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
