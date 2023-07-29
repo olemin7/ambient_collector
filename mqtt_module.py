@@ -47,7 +47,7 @@ class mqttModule:
     def _on_disconnect(self, client, userdata, rc):
         print("disconnecting reason  "  +str(rc))
         self.on_connection_changes(False)
-        self._client.connect(mqtt_server, mqtt_port)
+#        self._client.connect(mqtt_server, mqtt_port)
         pass
 
     def _subscribe(self,topic):

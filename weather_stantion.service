@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User=olemin
 WorkingDirectory=/home/olemin/weather_station_server
-ExecStart=/home/olemin/weather_station_server/.venv/bin/gunicorn -b 0.0.0.0:8080 -w 2 app:app
+ExecStart=/home/olemin/weather_station_server/.venv/bin/flask --no-debug run --host=0.0.0.0 -p 8080
 Restart=always
 
 [Install]
