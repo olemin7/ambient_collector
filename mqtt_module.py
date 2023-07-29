@@ -2,12 +2,12 @@ import paho.mqtt.client as mqtt
 import time
 import json
 
-mqtt_server="localhost"
+mqtt_server="central.local"
 mqtt_port=1883
 
 class mqttModule:
     def __init__(self):
-        self._client =mqtt.Client("central", transport="tcp")
+        self._client =mqtt.Client("central")
         self._client.on_log=self._on_log
         self._client.on_message=self._on_message
         self._client.on_connect=self._on_connect
@@ -18,7 +18,7 @@ class mqttModule:
         pass
 
     def _on_connection_changes(self,state):
-        print("cnection state= ",state)
+        print("conection state= ",state)
         pass
 
     def _on_log(self,client, userdata, level, buf):
@@ -37,7 +37,7 @@ class mqttModule:
         if rc==0:
             print("connected OK")
             for topic in self._subscribtion.keys():
-                self._client.subscribe(topic)
+                self._subscribe(topic)
             self.on_connection_changes(True)
         else:
             print("Bad connection Returned code=",rc)
@@ -53,10 +53,16 @@ class mqttModule:
         self._client.loop()
         pass
 
+    def _subscribe(self,topic):
+        if  self._client.is_connected():
+            print("mqtt subscribe topic ",topic);
+            self._client.subscribe(topic)
+            pass
+        pass
+
     def subscribe(self,topic, cb_function):
-        print("subscribe on "  +topic)
         self._subscribtion[topic]=cb_function
         if  self._client.is_connected():
-            self._client.subscribe(topic)
+            self._subscribe(topic)
             pass
         pass

@@ -63,13 +63,9 @@ Decorator for connect
 
 @socketio.on("connect")
 def connect():
-    global thread
     print("Client connected")
     socketio.emit("wholeData", {})
 
-    with thread_lock:
-        if thread is None:
-            thread = socketio.start_background_task(background_thread)
 
 
 """
@@ -81,7 +77,6 @@ Decorator for disconnect
 def disconnect():
     print("Client disconnected", request.sid)
 
-
-
-# if __name__ == "__main__":
-#     socketio.run(app, port=5000, host="0.0.0.0", debug=True)
+thread = socketio.start_background_task(background_thread)
+#if __name__ == "__main__":
+#    socketio.run(app, port=5000, host="0.0.0.0", debug=True)
