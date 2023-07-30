@@ -49,7 +49,8 @@ https://www.donskytech.com/raspberry-pi-how-to-start-python-script-on-boot/
 
 sudo cp weather_stantion.service /etc/systemd/system/weather_stantion.service
 sudo systemctl daemon-reload
-sudo systemctl start weather_stantion.service
+
 sudo systemctl status weather_stantion.service
+sudo systemctl restart weather_stantion.service
 sudo systemctl enable weather_stantion.service
 journalctl -u weather_stantion.service -f

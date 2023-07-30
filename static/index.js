@@ -125,14 +125,6 @@ let newHumidityYArray = [];
 let MAX_GRAPH_POINTS = 12;
 let ctr = 0;
 
-function updateBoxes(temperature, humidity) {
-  let temperatureDiv = document.getElementById("temperature");
-  let humidityDiv = document.getElementById("humidity");
-
-  temperatureDiv.innerHTML = temperature + " C";
-  humidityDiv.innerHTML = humidity + " %";
-}
-
 function updateCharts(lineChartDiv, xArray, yArray, sensorRead) {
   var today = new Date();
   var time =
@@ -154,12 +146,14 @@ function updateCharts(lineChartDiv, xArray, yArray, sensorRead) {
   Plotly.update(lineChartDiv, data_update);
 }
 
-function updateWeatherData(jsonResponse) {
-  let temperature = jsonResponse.temperature.toFixed(1);
-  let humidity = jsonResponse.humidity.toFixed(1);
-  let pressure = jsonResponse.pressure.toFixed(0);
+function updateWeatherData(weather) {
+  $("#temperature").html(weather.temperature.toFixed(1) + " C")
+  $("#humidity").html(weather.humidity.toFixed(1) + " %")
+  $("#pressure").html(weather.pressure.toFixed(0) + " mPa")
 
-  updateBoxes(temperature, humidity);
+  $("#lighting").html(weather.lighting.toFixed(0) + " Lux")
+  $("#battery").html(weather.battery.toFixed(2)+" V" )
+  $("#rssi").html(weather.rssi)
 
   // Update Temperature Line Chart
   updateCharts(
@@ -182,8 +176,16 @@ function updateWeatherData(jsonResponse) {
 var socket = io.connect();
 
 //receive details from server
-socket.on("weatherData", function (msg) {
+socket.on("update_weather", function (msg) {
   console.log(msg)
   var weather_data = JSON.parse(msg);
   updateWeatherData(weather_data);
+});
+
+socket.on("update", function (msg) {
+  console.log(msg)
+  var data = JSON.parse(msg);
+  if (data.weather){
+    updateWeatherData(data.weather);
+  }
 });

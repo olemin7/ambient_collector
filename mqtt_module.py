@@ -7,7 +7,7 @@ mqtt_port=1883
 
 class mqttModule:
     def __init__(self):
-        self._client =mqtt.Client("central")
+        self._client =mqtt.Client()
         self._client.on_log=self._on_log
         self._client.on_message=self._on_message
         self._client.on_connect=self._on_connect
@@ -27,9 +27,10 @@ class mqttModule:
         pass
 
     def _on_message(self,client, userdata, message):
-        msg_json=json.loads(message.payload.decode("utf-8"))
-        print("message received  ",msg_json, "topic",message.topic,"retained ",message.retain)
-        self._subscribtion[message.topic](msg_json)
+        msg_dict=json.loads(message.payload.decode("utf-8"))
+        print("message received  ",msg_dict, "topic",message.topic,"retained ",message.retain)
+        if message.topic in self._subscribtion:
+            self._subscribtion[message.topic](msg_dict)
         if message.retain==1:
             print("This is a retained message")
         pass

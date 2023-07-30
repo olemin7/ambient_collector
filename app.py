@@ -1,12 +1,9 @@
 import json
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO
-from random import random
 from threading import Lock
-from datetime import datetime
 from mqtt_module import mqttModule
-import board
-
+from collector import *
 
 mqtt_module=mqttModule()
 
@@ -17,20 +14,26 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "asfdwe"
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+data_keeper=dict()
 
+def topic_weather(msg):
+    if "weather" not in data_keeper:
+        data_keeper["weather"]=dict()
+        pass
+    if "dht" in msg:
+        update_helper(data_keeper["weather"], msg["dht"], "temperature")
+        update_helper(data_keeper["weather"], msg["dht"], "humidity")
+        update_helper(data_keeper["weather"], msg["bmp180"], "pressure")
+        pass
+    if "battery" in msg:
+        update_helper4(data_keeper["weather"],"battery", msg["battery"], "value")
+    if "BH1750" in msg:
+        update_helper4(data_keeper["weather"],"lighting", msg["BH1750"], "value")
+    if "wifi" in msg:
+        update_helper(data_keeper["weather"], msg["wifi"], "rssi")
 
-def topic_weather(msg_json):
-    upd={}
-    upd["temperature"]=msg_json["dht"]["temperature"]
-    upd["humidity"]=msg_json["dht"]["humidity"]
-    upd["pressure"]=msg_json["bmp180"]["pressure"]
-    upd["battery"]=3
-    upd["lighting"]=3
-    upd["rssi"]=-49
-
-    sensor_json = json.dumps(upd)
-
-    socketio.emit("weatherData", sensor_json)
+    sensor_json = json.dumps(data_keeper["weather"])
+    socketio.emit("update_weather", sensor_json)
     pass
 
 mqtt_module.subscribe("stat/weather",topic_weather)
@@ -64,7 +67,8 @@ Decorator for connect
 def connect():
     global thread
     print("Client connected")
-    socketio.emit("wholeData", {})
+    sensor_json = json.dumps(data_keeper)
+    socketio.emit("update", sensor_json)
  
     with thread_lock:
         if thread is None:
@@ -80,6 +84,5 @@ Decorator for disconnect
 def disconnect():
     print("Client disconnected", request.sid)
 
-thread = socketio.start_background_task(background_thread)
 #if __name__ == "__main__":
 #    socketio.run(app, port=5000, host="0.0.0.0", debug=True)
