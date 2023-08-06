@@ -24,8 +24,8 @@ def topic_weather(msg):
     if "bmp180" in msg:
         update_helper(data_keeper["weather"], msg["bmp180"], "pressure")
         update_history(history_keeper, "pressure", msg["bmp180"], "pressure", 7 * 24 * 60 * 60)
-        data_keeper["weather"]['history_pressure'] = history_pack(history_keeper, 'temperature', 7 * 24 * 60 * 60,
-                                                                     60 * 60)
+        data_keeper["weather"]['history_pressure'] = history_pack(history_keeper, 'pressure', 7 * 24 * 60 * 60,
+                                                               60 * 60)
         pass
     if "dht" in msg:
         update_helper(data_keeper["weather"], msg["dht"], "temperature")

@@ -1,6 +1,4 @@
 const today = new Date();
-
-var humidityHistoryDiv = document.getElementById("humidity-history");
 var graphConfig = { displayModeBar: false, responsive: true,};
 
 function temperature_history(history){
@@ -49,9 +47,44 @@ function temperature_history(history){
         hour--
         it++
     }
-    console.log(data_today)
-    console.log(data_yesterday)
+ //   console.log(data_today)
+ //   console.log(data_yesterday)
     Plotly.newPlot( temperatureHistoryDiv,  [data_today, data_yesterday],  temperatureLayout,  graphConfig);
+}
+
+function history_pressure(history){
+    var humidityDiv = document.getElementById("humidity-history");
+    var layout = {
+      title: {
+        text: "Pressure",
+      },
+      font: {
+        size: 14,
+        color: "#7f7f7f",
+      },
+      colorway: ['#000000', '#808080'],
+      margin: { t: 30, b: 20, l: 30, r: 20, pad: 0 },
+      yaxis: {
+        autorange: true,
+      },
+      xaxis: {
+        autorange: true,
+        type: 'linear'
+      },
+      showlegend:false,
+    };
+
+    var it=0
+    var data={mode:'lines+markers'}
+    data.x=[]
+    data.y=[]
+    while(it<history.values.length){
+        data.x.push(it*-1)
+        data.y.push((history.values[it]))
+        it++
+    }
+    console.log(data)
+    Plotly.newPlot( humidityDiv, [data],  layout,  graphConfig);
 }
 
 function updateWeatherData(weather) {
@@ -64,6 +97,9 @@ function updateWeatherData(weather) {
   $("#rssi").html(weather.rssi)
   if (weather.history_temperature){
     temperature_history(weather.history_temperature)
+  }
+  if (weather.history_pressure){
+    history_pressure(weather.history_pressure)
   }
 }
 /*
