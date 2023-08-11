@@ -1,16 +1,14 @@
 import time
-def update_helper4(to_dict,to_field,from_dict,from_field):
+def create_val(val):
+	return {'value':val,'ts':int(time.time())}
+
+def set_value(to_dict,to_field,from_dict,from_field):
 	if from_field in from_dict:
-		to_dict[to_field]=from_dict[from_field]
-		to_dict[to_field+"_time"]=int(time.time())
+		to_dict[to_field]=[create_val(from_dict[from_field])]
 		pass
 	pass
 
-def update_helper(to_dict,from_dict,field):
-	update_helper4(to_dict,field,from_dict,field)
-	pass
-
-def update_history(to_dict,to_field,from_dict,from_field,period_sec):
+def add_value(to_dict,to_field,from_dict,from_field,period_sec):
 	ts=int(time.time())
 	history_data=[]
 	if to_field in to_dict:
@@ -22,7 +20,7 @@ def update_history(to_dict,to_field,from_dict,from_field,period_sec):
 			pass
 		pass
 	if from_field in from_dict:
-		history_data.append({'val':from_dict[from_field],'ts':ts})
+		history_data.append(create_val(from_dict[from_field]))
 		pass
 	to_dict[to_field]=history_data
 	pass

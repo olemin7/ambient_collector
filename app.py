@@ -15,32 +15,26 @@ app.config["SECRET_KEY"] = "asfdwe"
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 data_keeper=dict()
-history_keeper=dict()
 
 def topic_weather(msg):
     if "weather" not in data_keeper:
         data_keeper["weather"]=dict()
         pass
     if "bmp180" in msg:
-        update_helper(data_keeper["weather"], msg["bmp180"], "pressure")
-        update_history(history_keeper, "pressure", msg["bmp180"], "pressure", 7 * 24 * 60 * 60)
-        data_keeper["weather"]['history_pressure'] = history_pack(history_keeper, 'pressure', 7 * 24 * 60 * 60,
-                                                               60 * 60)
+        add_value(data_keeper["weather"], "pressure", msg["bmp180"], "pressure", 7 * 24 * 60 * 60)
         pass
     if "dht" in msg:
-        update_helper(data_keeper["weather"], msg["dht"], "temperature")
-        update_helper(data_keeper["weather"], msg["dht"], "humidity")
-        update_history(history_keeper,"temperature", msg["dht"], "temperature",2*24*60*60)
-        data_keeper["weather"]['history_temperature']=history_pack(history_keeper,'temperature',2*24*60*60,60*60)
+        set_value(data_keeper["weather"],"humidity", msg["dht"], "humidity")
+        add_value(data_keeper["weather"],"temperature", msg["dht"], "temperature",7*24*60*60)
         pass
     if "battery" in msg:
-        update_helper4(data_keeper["weather"],"battery", msg["battery"], "value")
+        set_value(data_keeper["weather"],"battery", msg["battery"], "value")
         pass
     if "BH1750" in msg:
-        update_helper4(data_keeper["weather"],"lighting", msg["BH1750"], "value")
+        set_value(data_keeper["weather"],"lighting", msg["BH1750"], "value")
         pass
     if "wifi" in msg:
-        update_helper(data_keeper["weather"], msg["wifi"], "rssi")
+        set_value(data_keeper["weather"], "rssi", msg["wifi"], "rssi")
         pass
     sensor_json = json.dumps(data_keeper["weather"])
     socketio.emit("update_weather", sensor_json)
