@@ -53,50 +53,20 @@
         </div>
       </div>
       <div class="row">
-          <div class="col d-flex align-items-center justify-content-center rounded-3 p-1 shadow">
-            <div class="right-side">
-              <div class="box-topic">Temperature</div>
-              <div class="number" id="temperature">35 C</div>
+          {%for room in rooms%}
+            <div class="col">
+              <div class="card">
+                <h3 class="card-header">
+                  {{room.get_name()}}
+                </h3>
+                <div class="card-body">
+                  <h4>Temperature:<span class="number" id="temperature_{{room.get_id()}}">123</span> </h4>
+                  <h4>Humidity:<span class="number" id="humidity_{{room.get_id()}}">123</span> </h4>
+                  <h5>rssi:<span class="number" id="rssi_{{room.get_id()}}">123</span> </h5>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="col d-flex align-items-center justify-content-center rounded-3 p-1 shadow">
-            <div class="right-side">
-              <div class="box-topic">Humidity</div>
-              <div class="number" id="humidity">40%</div>
-            </div>
-          </div>
-          <div class="col d-flex align-items-center justify-content-center rounded-3 p-1 shadow">
-            <div class="right-side">
-              <div class="box-topic">Pressure</div>
-              <div class="number" id="pressure">40%</div>
-            </div>
-          </div>
-      </div>
-      <div class="row">
-        <div class="p-3 border-top border-3 border-danger">
-          <div class="row mt-3 gx-5">
-            <div class="col-md-12 col-lg-6 history-divs">
-              <div id="temperature-history"></div>
-            </div>
-            <div class="col-md-12 col-lg-6 history-divs">
-              <div id="humidity-history"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col d-flex lign-items-center justify-content-center shadow">
-          <div class="box-topic">lighting:</div>
-          <div class="number" id="lighting">40</div>
-        </div>
-        <div class="col d-flex lign-items-center justify-content-center shadow">
-          <div class="box-topic">battery:</div>
-          <div class="number" id="battery">40</div>
-        </div>
-        <div class="col d-flex lign-items-center justify-content-center shadow">
-          <div class="box-topic">rssi:</div>
-          <div class="number" id="rssi">40</div>
-        </div>
+            {%endfor%}
       </div>
     </div>
     <footer class="footer mt-auto py-3 bg-dark">
@@ -104,6 +74,6 @@
         <span class="text-white">&copy;2023</span>
       </div>
     </footer>
-    <script type="text/javascript" src="{{ url_for('static', filename = 'outdoors.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename = 'rooms.js') }}"></script>
   </body>
 </html>
