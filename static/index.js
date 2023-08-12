@@ -1,11 +1,15 @@
-const today = new Date();
 var graphConfig = { displayModeBar: false, responsive: true,};
 
-function temperature_history(history){
-    var temperatureHistoryDiv = document.getElementById("temperature-history");
+function ts_to_date(ts){
+        date =new Date(ts*1000)
+        return dateFormat(date,"isoDateTime")
+}
+
+function temperature_comparation(history){
+    var temperatureHistoryDiv = document.getElementById("temperature-compare");
     var temperatureLayout = {
       title: {
-        text: "Temperature",
+        text: "Temperature today-yesterday",
       },
       font: {
         size: 14,
@@ -17,43 +21,46 @@ function temperature_history(history){
         autorange: true,
       },
       xaxis: {
-        autorange: false,
-        range: [0, 23],
-        type: 'linear'
+        autorange: true,
       },
       showlegend:false,
     };
 
     var temperatures=history.values
-    var hour=today.getHours();
+    var date= new Date()
+    const today = date.getDay();
     var it=temperatures.length
     var data_today={mode:'lines+markers'}
     data_today.x=[]
     data_today.y=[]
+    history.forEach((element) => {
+        if((new Date(element.ts*1000)).getDay()==today){
+            data_today.x.push(ts_to_date(element.ts))
+            data_today.y.push(element.value)
+        }
+    });
 
-    while(it && hour>=0){
-        data_today.x.push(hour--)
-        data_today.y.push(temperatures[--it])
-    }
-
+    date.setDate(date.getDate() - 1)
+    const yesterday = date.getDay();
     var data_yesterday={mode:"lines"}
     data_yesterday.x=[]
     data_yesterday.y=[]
-    hour=23
-    while(it && hour>=0){
-        data_yesterday.x.push(hour--)
-        data_yesterday.y.push(temperatures[--it])
-    }
+
+    history.forEach((element) => {
+        if((new Date(element.ts*1000)).getDay()==yesterday){
+            data_yesterday.x.push(ts_to_date(element.ts+24*60*60))
+            data_yesterday.y.push(element.value)
+        }
+    });
  //   console.log(data_today)
  //   console.log(data_yesterday)
     Plotly.newPlot( temperatureHistoryDiv,  [data_today, data_yesterday],  temperatureLayout,  graphConfig);
 }
 
-function history_pressure(vals){
-    var humidityDiv = document.getElementById("humidity-history");
+function history_single(div_name, name, vals){
     var layout = {
       title: {
-        text: "Pressure",
+        text: name,
       },
       font: {
         size: 14,
@@ -71,17 +78,16 @@ function history_pressure(vals){
     };
 
     var it=0
-    var data={mode:'lines+markers' }
+    var data={mode:'lines' }
     data.x=[]
     data.y=[]
     vals.forEach((element) => {
-        date =new Date(element.ts*1000)
-        data.x.push(dateFormat(date,"isoDateTime"))
+        data.x.push(ts_to_date(element.ts))
         data.y.push(element.value)
     });
 
     console.log(data)
-    Plotly.newPlot( humidityDiv, [data],  layout,  graphConfig);
+    Plotly.newPlot( document.getElementById(div_name), [data],  layout,  graphConfig);
 }
 
 function getLastVal(vals) {
@@ -101,8 +107,9 @@ function updateWeatherData(weather) {
   $("#battery").html(getLastVal(weather.battery).toFixed(2)+" V" )
   $("#rssi").html(getLastVal(weather.rssi))
 
-  //temperature_history(weather.history_temperature)
-  history_pressure(weather.pressure)
+  temperature_comparation(weather.temperature)
+  history_single("temperature-history","Temperature",weather.temperature)
+  history_single("humidity-history","Pressure",weather.pressure)
 }
 /*
   SocketIO Code
@@ -124,4 +131,4 @@ socket.on("update", function (msg) {
   }
 });
 
-//updateWeatherData({"pressure": 973.2601318, "pressure_time": 1691392977, "history_pressure": {"period_sec": 604800, "step_sec": 3600, "values": [978.6389363666667, 978.4580688499999, 978.0746001999998, 977.7390899750001, 977.3520355249999, 976.892517075, 976.3505249250001, 975.59550475, 974.919372525, 974.3355102600001, 974.0034179500001, 973.6764221, 973.3241577250001, 973.2507019249999, 973.2289733499999]}, "temperature": 28.10000038, "temperature_time": 1691392977, "humidity": 58.79999924, "humidity_time": 1691392977, "history_temperature": {"period_sec": 172800, "step_sec": 3600, "values": [30.633333840000002, 30.17500019, 29.874999525, 29.625000475, 29.44999981, 29.25, 29.10000038, 28.874999525, 28.675000665000002, 28.560000228, 28.474999905, 29.224999904999997, 29.849999904999997, 28.724999904999997, 28.150000570000003]}, "battery": 4.144042969, "battery_time": 1691392977, "lighting": 350, "lighting_time": 1691392977, "rssi": -45, "rssi_time": 1691392977});
+updateWeatherData({"pressure": [{"value": 992.3433228, "ts": 1691780239}, {"value": 992.2914429, "ts": 1691781113}, {"value": 992.2445679, "ts": 1691781988}, {"value": 992.2699585, "ts": 1691782866}, {"value": 992.295166, "ts": 1691783742}, {"value": 992.2167969, "ts": 1691784619}, {"value": 992.2197876, "ts": 1691785498}, {"value": 992.1641846, "ts": 1691786376}, {"value": 992.005127, "ts": 1691787253}, {"value": 991.9840088, "ts": 1691788132}, {"value": 992.0280762, "ts": 1691789011}, {"value": 992.0081787, "ts": 1691789888}, {"value": 991.9771118, "ts": 1691790769}, {"value": 991.8626099, "ts": 1691791648}, {"value": 991.7808228, "ts": 1691792528}, {"value": 991.7034302, "ts": 1691793406}, {"value": 991.6160889, "ts": 1691794286}, {"value": 991.6082153, "ts": 1691795162}, {"value": 991.6864624, "ts": 1691796040}, {"value": 991.630188, "ts": 1691796918}, {"value": 991.6860352, "ts": 1691797798}, {"value": 991.7924805, "ts": 1691798676}, {"value": 991.739502, "ts": 1691799555}, {"value": 991.7032471, "ts": 1691800434}, {"value": 991.6633911, "ts": 1691801313}, {"value": 991.5639648, "ts": 1691802191}, {"value": 991.6320801, "ts": 1691803070}, {"value": 991.5652466, "ts": 1691803948}, {"value": 991.4779053, "ts": 1691804827}, {"value": 991.4213257, "ts": 1691805705}, {"value": 991.5597534, "ts": 1691806583}, {"value": 991.6038208, "ts": 1691807462}, {"value": 991.4214478, "ts": 1691808340}, {"value": 991.5015259, "ts": 1691809218}, {"value": 991.4853516, "ts": 1691810097}, {"value": 991.5578613, "ts": 1691810975}, {"value": 991.5098877, "ts": 1691811855}, {"value": 991.4609375, "ts": 1691812734}, {"value": 991.571106, "ts": 1691813613}, {"value": 991.4909668, "ts": 1691814493}, {"value": 991.5549927, "ts": 1691815372}, {"value": 991.6322632, "ts": 1691816249}, {"value": 991.6277466, "ts": 1691817129}, {"value": 991.6616211, "ts": 1691818007}, {"value": 991.8101196, "ts": 1691818885}, {"value": 991.7611694, "ts": 1691819766}, {"value": 991.8721313, "ts": 1691820141}, {"value": 991.7440796, "ts": 1691820166}, {"value": 991.7842407, "ts": 1691820556}, {"value": 991.7293091, "ts": 1691820566}, {"value": 991.7225342, "ts": 1691820613}], "humidity": [{"value": 47.5, "ts": 1691820613}], "temperature": [{"value": 25.5, "ts": 1691780239}, {"value": 24.89999962, "ts": 1691781113}, {"value": 24.39999962, "ts": 1691781988}, {"value": 24.29999924, "ts": 1691782866}, {"value": 23.70000076, "ts": 1691783742}, {"value": 23.29999924, "ts": 1691784619}, {"value": 23.10000038, "ts": 1691785498}, {"value": 22.89999962, "ts": 1691786376}, {"value": 22.5, "ts": 1691787253}, {"value": 22.70000076, "ts": 1691788132}, {"value": 22.79999924, "ts": 1691789011}, {"value": 22.60000038, "ts": 1691789888}, {"value": 22.29999924, "ts": 1691790769}, {"value": 23.29999924, "ts": 1691791648}, {"value": 23.79999924, "ts": 1691792528}, {"value": 24, "ts": 1691793406}, {"value": 24.10000038, "ts": 1691794286}, {"value": 23.60000038, "ts": 1691795162}, {"value": 23.70000076, "ts": 1691796040}, {"value": 22.60000038, "ts": 1691796918}, {"value": 22.10000038, "ts": 1691797798}, {"value": 22.89999962, "ts": 1691798676}, {"value": 23.39999962, "ts": 1691799555}, {"value": 23.29999924, "ts": 1691800434}, {"value": 23.20000076, "ts": 1691801313}, {"value": 23.29999924, "ts": 1691802191}, {"value": 23.39999962, "ts": 1691803070}, {"value": 23.5, "ts": 1691803948}, {"value": 23.5, "ts": 1691804827}, {"value": 23.5, "ts": 1691805705}, {"value": 23.5, "ts": 1691806583}, {"value": 23.29999924, "ts": 1691807462}, {"value": 23.20000076, "ts": 1691808340}, {"value": 23.20000076, "ts": 1691809218}, {"value": 23.10000038, "ts": 1691810097}, {"value": 22.79999924, "ts": 1691810975}, {"value": 23.39999962, "ts": 1691811855}, {"value": 23.5, "ts": 1691812734}, {"value": 23.70000076, "ts": 1691813613}, {"value": 24.20000076, "ts": 1691814493}, {"value": 24.20000076, "ts": 1691815372}, {"value": 24.10000038, "ts": 1691816249}, {"value": 24, "ts": 1691817129}, {"value": 23.79999924, "ts": 1691818007}, {"value": 24, "ts": 1691818885}, {"value": 24.60000038, "ts": 1691819766}, {"value": 25.29999924, "ts": 1691820141}, {"value": 25.20000076, "ts": 1691820166}, {"value": 25.5, "ts": 1691820556}, {"value": 25.60000038, "ts": 1691820566}, {"value": 25.60000038, "ts": 1691820613}], "battery": [{"value": 4.1484375, "ts": 1691820613}], "lighting": [{"value": 240.8333282, "ts": 1691820613}], "rssi": [{"value": -51, "ts": 1691820613}]});

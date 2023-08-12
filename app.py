@@ -15,6 +15,16 @@ app.config["SECRET_KEY"] = "asfdwe"
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 data_keeper=dict()
+def json_dumps_fround(field):
+    def json_round_floats(o):
+        if isinstance(o, float):
+            return round(o, 3)
+        if isinstance(o, dict):
+            return {k: json_round_floats(v) for k, v in o.items()}
+        if isinstance(o, (list, tuple)):
+            return [json_round_floats(x) for x in o]
+        return o
+    return json.dumps(json_round_floats(field))
 
 def topic_weather(msg):
     if "weather" not in data_keeper:
@@ -36,7 +46,7 @@ def topic_weather(msg):
     if "wifi" in msg:
         set_value(data_keeper["weather"], "rssi", msg["wifi"], "rssi")
         pass
-    sensor_json = json.dumps(data_keeper["weather"])
+    sensor_json = json_dumps_fround(data_keeper["weather"])
     socketio.emit("update_weather", sensor_json)
     pass
 
@@ -71,7 +81,7 @@ Decorator for connect
 def connect():
     global thread
     print("Client connected")
-    sensor_json = json.dumps(data_keeper)
+    sensor_json = json_dumps_fround(data_keeper)
     socketio.emit("update", sensor_json)
  
     with thread_lock:
