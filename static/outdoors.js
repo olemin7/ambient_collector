@@ -5,11 +5,11 @@ function ts_to_date(ts){
         return dateFormat(date,"isoDateTime")
 }
 
-function temperature_comparation(history){
-    var temperatureHistoryDiv = document.getElementById("temperature-compare");
+function history_comparation(div_name, name, vals){
+    var temperatureHistoryDiv = document.getElementById(div_name);
     var temperatureLayout = {
       title: {
-        text: "Temperature today-yesterday",
+        text: name,
       },
       font: {
         size: 14,
@@ -26,27 +26,19 @@ function temperature_comparation(history){
       showlegend:false,
     };
 
-    var temperatures=history.values
     var date= new Date()
     const today = date.getDay();
-    var it=temperatures.length
     var data_today={mode:'lines+markers'}
-    data_today.x=[]
-    data_today.y=[]
-    history.forEach((element) => {
-        if((new Date(element.ts*1000)).getDay()==today){
-            data_today.x.push(ts_to_date(element.ts))
-            data_today.y.push(element.value)
-        }
-    });
-
     date.setDate(date.getDate() - 1)
     const yesterday = date.getDay();
+    data_today.x=[]
+    data_today.y=[]
     var data_yesterday={mode:"lines"}
     data_yesterday.x=[]
     data_yesterday.y=[]
-
-    history.forEach((element) => {
+    vals.forEach((element) => {
+        data_today.x.push(ts_to_date(element.ts))
+        data_today.y.push(element.value)
         if((new Date(element.ts*1000)).getDay()==yesterday){
             data_yesterday.x.push(ts_to_date(element.ts+24*60*60))
             data_yesterday.y.push(element.value)
@@ -107,8 +99,7 @@ function updateWeatherData(weather) {
   $("#battery").html(getLastVal(weather.battery).toFixed(2)+" V" )
   $("#rssi").html(getLastVal(weather.rssi))
 
-  temperature_comparation(weather.temperature)
-  history_single("temperature-history","Temperature",weather.temperature)
+  history_comparation("temperature-history","Temperature",weather.temperature)
   history_single("humidity-history","Pressure",weather.pressure)
 }
 /*
