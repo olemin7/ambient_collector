@@ -1,10 +1,10 @@
 import json
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO
-from threading import Lock
-from mqtt_module import mqttModule
-from obj_mqtt import CWeather,CClock
+from mqtt_module import mqttModule, CWeather, CClock
+#from gpio_module import CGPIOpsu
 from functools import partial
+
 
 mqtt_module=mqttModule()
 
@@ -15,7 +15,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 weather =CWeather("Вулиця","stat/weather")
 rooms_data=[CClock("Батьки","stat/clock_parent"),
        CClock("Діти","stat/clock_children"),
-       CClock("майстерня","stat/clock_workshop")]
+       CClock("Майстерня","stat/clock_workshop")]
 
 def json_dumps_fround(field):
     def json_round_floats(o):
@@ -28,16 +28,16 @@ def json_dumps_fround(field):
         return o
     return json.dumps(json_round_floats(field))
 
-def mqtt_handler(handler,event,msg):
+def mqtt_handler_wrapper(handler,event,msg):
     handler.on_message(msg)
     as_json = json_dumps_fround(handler.get_data())
     socketio.emit(event, as_json)
     pass
 
 def start():
-    mqtt_module.subscribe(weather.get_topic(),partial(mqtt_handler,weather,"update_weather"))
+    mqtt_module.subscribe(weather.get_topic(),partial(mqtt_handler_wrapper,weather,"update_weather"))
     for el in rooms_data:
-        mqtt_module.subscribe(el.get_topic(), partial(mqtt_handler, el,"update_room"))
+        mqtt_module.subscribe(el.get_topic(), partial(mqtt_handler_wrapper, el,"update_room"))
         pass
     pass
 
