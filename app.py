@@ -3,9 +3,11 @@ from flask import Flask, render_template, request
 from flask_socketio import SocketIO
 from mqtt_module import mqttModule, CWeather, CClock
 from gpio_module import CGPIOpsu
+from tbot_module import TBot
 from functools import partial
+import yaml
 
-
+config={}
 mqtt_module=mqttModule()
 
 app = Flask(__name__)
@@ -39,6 +41,10 @@ def mqtt_handler_wrapper(handler,event,msg):
     pass
 
 def start():
+    with open("config.yaml", "r") as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+        pass
+    print('config=',config)
     mqtt_module.subscribe(weather.get_topic(),partial(mqtt_handler_wrapper,weather,"update_weather"))
     for el in rooms_data:
         mqtt_module.subscribe(el.get_topic(), partial(mqtt_handler_wrapper, el,"update_room"))

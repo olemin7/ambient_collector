@@ -31,7 +31,7 @@ function history(vals){
         size: 14,
         color: "#7f7f7f",
       },
-      colorway: ['#FF0000', '#00FF00'],
+      colorway: ['#00FF00', '#0000FF'],
       margin: { t: 30, b: 20, l: 30, r: 20, pad: 0 },
       yaxis: {
         autorange: true,

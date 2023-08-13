@@ -22,7 +22,7 @@ class CGPIOpsu:
         if pin_no==V220_PIN:
             add_value(self._data, "V220",value, 7*24*60*60)
             pass
-        elif pin_no==LOW_BAT_PIN:
+        elif pin_no == LOW_BAT_PIN:
             add_value(self._data, "BAT_OK", value, 7*24*60*60)
             pass
         pass
