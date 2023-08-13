@@ -91,11 +91,11 @@ class CWeather(CObjCommon):
 
     def on_message(self,msg):
         if "bmp180" in msg:
-            add_value(self._data, "pressure", msg["bmp180"], "pressure", 7 * 24 * 60 * 60)
+            add_value_dict(self._data, "pressure", msg["bmp180"], "pressure", 7 * 24 * 60 * 60)
             pass
         if "dht" in msg:
             set_value(self._data, "humidity", msg["dht"], "humidity")
-            add_value(self._data, "temperature", msg["dht"], "temperature", 7 * 24 * 60 * 60)
+            add_value_dict(self._data, "temperature", msg["dht"], "temperature", 7 * 24 * 60 * 60)
             pass
         if "battery" in msg:
             set_value(self._data, "battery", msg["battery"], "value")

@@ -35,8 +35,7 @@ def psu_state_update(state):
 
 def mqtt_handler_wrapper(handler,event,msg):
     handler.on_message(msg)
-    as_json = json_dumps_fround(handler.get_data())
-    socketio.emit(event, as_json)
+    socketio.emit(event, handler.get_data())
     pass
 
 def start():
@@ -53,12 +52,16 @@ Serve root index file
 
 @app.route("/")
 @app.route("/outdoors")
-def outdoors():
+def outdoors_page():
     return render_template("outdoors.html")
 
 @app.route("/rooms")
-def rooms():
+def rooms_page():
     return render_template("rooms.html",rooms=rooms_data)
+
+@app.route("/psu")
+def psu_page():
+    return render_template("psu.html")
 
 """
 Decorator for connect
@@ -71,8 +74,7 @@ def connect():
     for el in rooms_data:
         update["rooms"].append(el.get_data())
         pass
-    update_json = json_dumps_fround(update)
-    socketio.emit("update", update_json)
+    socketio.emit("update", update)
     pass
 
 

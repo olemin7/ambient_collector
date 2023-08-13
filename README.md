@@ -51,5 +51,6 @@ sudo systemctl daemon-reload
 
 sudo systemctl status weather_stantion.service
 sudo systemctl restart weather_stantion.service
+sudo systemctl stop weather_stantion.service
 sudo systemctl enable weather_stantion.service
 journalctl -u weather_stantion.service -f

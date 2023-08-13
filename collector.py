@@ -8,7 +8,7 @@ def set_value(to_dict,to_field,from_dict,from_field):
 		pass
 	pass
 
-def add_value(to_dict,to_field,from_dict,from_field,period_sec):
+def add_value(to_dict, to_field, value, period_sec):
 	ts=int(time.time())
 	history_data=[]
 	if to_field in to_dict:
@@ -19,10 +19,19 @@ def add_value(to_dict,to_field,from_dict,from_field,period_sec):
 				pass
 			pass
 		pass
-	if from_field in from_dict:
-		history_data.append(create_val(from_dict[from_field]))
+	if value is not None:
+		history_data.append(create_val(value))
 		pass
 	to_dict[to_field]=history_data
+	pass
+
+def add_value_dict(to_dict, to_field, from_dict, from_field, period_sec):
+	if from_field in from_dict:
+		add_value(to_dict, to_field,from_dict[from_field],period_sec)
+		pass
+	else:
+		add_value(to_dict, to_field, None, period_sec)
+		pass
 	pass
 
 def history_pack(from_dict,from_field,period_sec,step_sec):

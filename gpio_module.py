@@ -12,17 +12,23 @@ class CGPIOpsu:
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(V220_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(LOW_BAT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        self.__update()
+        self.__update(V220_PIN)
+        self.__update(LOW_BAT_PIN)
         GPIO.add_event_detect(V220_PIN, GPIO.BOTH,callback = self.__on_event, bouncetime = 200)
         GPIO.add_event_detect(LOW_BAT_PIN, GPIO.BOTH,callback = self.__on_event, bouncetime = 200)
         pass
-    def __update(self):
-        self._data["V220"] = GPIO.input(V220_PIN)
-        self._data["BAT_OK"] = GPIO.input(LOW_BAT_PIN)
+    def __update(self,pin_no):
+        value=GPIO.input(pin_no)
+        if pin_no==V220_PIN:
+            add_value(self._data, "V220",value, 7*24*60*60)
+            pass
+        elif pin_no==LOW_BAT_PIN:
+            add_value(self._data, "BAT_OK", value, 7*24*60*60)
+            pass
         pass
 
     def __on_event(self,pin_no):
-        self.__update()
+        self.__update(pin_no)
         if self.__cb:
             self.__cb(self._data)
             pass

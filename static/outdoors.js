@@ -44,8 +44,6 @@ function history_comparation(div_name, name, vals){
             data_yesterday.y.push(element.value)
         }
     });
- //   console.log(data_today)
- //   console.log(data_yesterday)
     Plotly.newPlot( temperatureHistoryDiv,  [data_today, data_yesterday],  temperatureLayout,  graphConfig);
 }
 
@@ -117,15 +115,13 @@ var socket = io.connect();
 //receive details from server
 socket.on("update_weather", function (msg) {
   console.log(msg)
-  var weather = JSON.parse(msg);
-  updateWeatherData(weather);
+  updateWeatherData(msg);
 });
 
 socket.on("update", function (msg) {
   console.log(msg)
-  var data = JSON.parse(msg);
-  if (data.weather){
-    updateWeatherData(data.weather);
+  if (msg.weather){
+    updateWeatherData(msg.weather);
   }
 });
 

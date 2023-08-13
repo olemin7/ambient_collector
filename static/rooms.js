@@ -26,15 +26,13 @@ var socket = io.connect();
 //receive details from server
 socket.on("update_room", function (msg) {
   console.log(msg)
-  var room = JSON.parse(msg);
-  update_room(room);
+  update_room(msg);
 });
 
 socket.on("update", function (msg) {
   console.log(msg)
-  var data = JSON.parse(msg);
-  if (data.rooms){
-      data.rooms.forEach((val) => {
+  if (msg.rooms){
+      msg.rooms.forEach((val) => {
         update_room(val);
     })
   }
