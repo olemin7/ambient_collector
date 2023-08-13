@@ -91,16 +91,23 @@ function getLastVal(vals) {
 }
 
 function updateWeatherData(weather) {
-  $("#temperature").html(getLastVal(weather.temperature).toFixed(1) + " C")
-  $("#humidity").html(getLastVal(weather.humidity).toFixed(1) + " %")
-  $("#pressure").html(getLastVal(weather.pressure).toFixed(0) + " mPa")
-
-  $("#lighting").html(getLastVal(weather.lighting).toFixed(0) + " Lux")
-  $("#battery").html(getLastVal(weather.battery).toFixed(2)+" V" )
-  $("#rssi").html(getLastVal(weather.rssi))
-
-  history_comparation("temperature-history","Temperature",weather.temperature)
-  history_single("humidity-history","Pressure",weather.pressure)
+    if(weather.temperature){
+        $("#temperature").html(getLastVal(weather.temperature).toFixed(1) + " C")
+        history_comparation("temperature-history","Temperature",weather.temperature)
+    }
+    if(weather.humidity){
+        $("#humidity").html(getLastVal(weather.humidity).toFixed(1) + " %")
+    }
+    if(weather.pressure){
+        $("#pressure").html(getLastVal(weather.pressure).toFixed(0) + " mPa")
+         history_single("pressure-history","Pressure",weather.pressure)
+    }
+    if(weather.lighting){
+        $("#lighting").html(getLastVal(weather.lighting).toFixed(0) + " Lux")
+    }
+    if(weather.battery){
+        $("#battery").html(getLastVal(weather.battery).toFixed(2)+" V" )
+    }
 }
 /*
   SocketIO Code

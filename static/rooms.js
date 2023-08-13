@@ -17,10 +17,6 @@ function update_room(room) {
        let humidityDiv = document.getElementById(`humidity_${room.id}`)
        humidityDiv.innerHTML =getLastVal(room.humidity).toFixed(1) + " %"
     }
-     if(room.rssi){
-       let rssiDiv = document.getElementById(`rssi_${room.id}`)
-       rssiDiv.innerHTML =getLastVal(room.rssi).toFixed(0)
-    }
 }
 /*
   SocketIO Code
