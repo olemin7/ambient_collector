@@ -19,7 +19,7 @@ flask run --host=0.0.0.0
 ```
 5. Access the application using the following URL
 ```
-http://<IP>:5000
+http://127.0.0.1:5000/
 ```
   
   
@@ -32,6 +32,7 @@ https://github.com/donskytech/dht22-weather-station-python-flask-socketio-multip
   
 ### How to auto-start this project when your Raspberry Pi boots or starts?  
 https://www.donskytech.com/raspberry-pi-how-to-start-python-script-on-boot/
+https://plotly.com/javascript/multiple-axes/
 
 
 sudo cp weather_stantion.service /etc/systemd/system/weather_stantion.service

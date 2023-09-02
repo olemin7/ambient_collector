@@ -90,24 +90,15 @@ class CWeather(CObjCommon):
         pass
 
     def on_message(self,msg):
-        if "bmp180" in msg:
-            add_value_dict(self._data, "pressure", msg["bmp180"], "pressure", 7 * 24 * 60 * 60)
-            pass
-        if "dht" in msg:
-            set_value(self._data, "humidity", msg["dht"], "humidity")
-            add_value_dict(self._data, "temperature", msg["dht"], "temperature", 7 * 24 * 60 * 60)
-            pass
+        if "weather" in msg:
+            add_value_dict(self._data, "pressure", msg["weather"], "pressure", 7 * 24 * 60 * 60)
+            set_value(self._data, "humidity", msg["weather"], "humidity")
+            add_value_dict(self._data, "temperature", msg["weather"], "temperature", 7 * 24 * 60 * 60)
+            set_value(self._data, "ambient_light", msg["weather"], "ambient_light")
         if "battery" in msg:
-            set_value(self._data, "battery", msg["battery"], "value")
-            pass
-        if "BH1750" in msg:
-            set_value(self._data, "lighting", msg["BH1750"], "value")
-            pass
+            set_value(self._data, "battery", msg["battery"], "percentage")
         if "wifi" in msg:
             set_value(self._data, "rssi", msg["wifi"], "rssi")
-            pass
-        pass
-    pass
 
 class CClock(CObjCommon):
     def __init__(self,name,topic):

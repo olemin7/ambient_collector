@@ -2,7 +2,11 @@ import json
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO
 from mqtt_module import mqttModule, CWeather, CClock
-from gpio_module import CGPIOpsu
+try:
+    from gpio_module import CGPIOpsu
+    psu = CGPIOpsu()
+except (ImportError, RuntimeError):
+    pass
 from tbot_module import TBot
 from functools import partial
 import yaml
@@ -14,11 +18,11 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "asfdwe"
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-weather =CWeather("Вулиця","stat/weather")
+weather =CWeather("Вулиця","sensors/weather")
 rooms_data=[CClock("Батьки","stat/clock_parent"),
        CClock("Діти","stat/clock_children"),
        CClock("Майстерня","stat/clock_workshop")]
-psu=CGPIOpsu()
+
 
 def json_dumps_fround(field):
     def json_round_floats(o):
@@ -33,24 +37,20 @@ def json_dumps_fround(field):
 
 def psu_state_update(state):
     socketio.emit('update_psu', state)
-    pass
 
 def mqtt_handler_wrapper(handler,event,msg):
     handler.on_message(msg)
     socketio.emit(event, handler.get_data())
-    pass
 
 def start():
     with open("config.yaml", "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
-        pass
     print('config=',config)
     mqtt_module.subscribe(weather.get_topic(),partial(mqtt_handler_wrapper,weather,"update_weather"))
     for el in rooms_data:
         mqtt_module.subscribe(el.get_topic(), partial(mqtt_handler_wrapper, el,"update_room"))
-        pass
-    psu.set_cb(psu_state_update)
-    pass
+    if 'psu' in globals():
+        psu.set_cb(psu_state_update)
 
 """
 Serve root index file
@@ -76,12 +76,13 @@ Decorator for connect
 @socketio.on("connect")
 def connect():
     print("Client connected")
-    update={'weather':weather.get_data(),'rooms':[],'psu': psu.get_data()}
+    update={'weather':weather.get_data(),'rooms':[]}
+    if 'psu' in globals():
+        update['psu']=psu.get_data()
+
     for el in rooms_data:
         update["rooms"].append(el.get_data())
-        pass
     socketio.emit("update", update)
-    pass
 
 
 """

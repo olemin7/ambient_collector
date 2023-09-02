@@ -20,7 +20,7 @@ class CGPIOpsu:
     def __update(self,pin_no):
         value=GPIO.input(pin_no)
         if pin_no==V220_PIN:
-            add_value(self._data, "V220",value, 7*24*60*60)
+            add_value(self._data, "V220",(0 if value else 1), 7*24*60*60)
             pass
         elif pin_no == LOW_BAT_PIN:
             add_value(self._data, "BAT_OK", value, 7*24*60*60)

@@ -1,6 +1,6 @@
 import time
 def create_val(val):
-	return {'value':val,'ts':int(time.time())}
+	return {'value':int(val*100)/100,'ts':int(time.time())}
 
 def set_value(to_dict,to_field,from_dict,from_field):
 	if from_field in from_dict:
