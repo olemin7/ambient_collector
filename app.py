@@ -2,19 +2,20 @@ import json
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO
 from mqtt_module import mqttModule, CWeather, CClock
+from collector import *
 try:
     from gpio_module import CGPIOpsu
     psu = CGPIOpsu()
 except (ImportError, RuntimeError):
     pass
 
-from telebot.async_telebot import AsyncTeleBot
 from tbot_module import TBot
 from functools import partial
 import yaml
 import asyncio
 import threading
 import logging
+import requests
 
 logging.basicConfig(format=' %(levelname)s %(asctime)s:%(filename)s:%(lineno)d: %(message)s', level = logging.DEBUG)
 log =logging.getLogger('logger')
@@ -31,6 +32,8 @@ mqtt_module=mqttModule()
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "asfdwe"
 socketio = SocketIO(app, cors_allowed_origins="*")
+event_loop=asyncio.new_event_loop()
+asyncio.set_event_loop(event_loop)
 
 weather =CWeather("Вулиця","sensors/weather")
 rooms_data=[CClock("Батьки","stat/clock_parent"),
@@ -39,14 +42,35 @@ rooms_data=[CClock("Батьки","stat/clock_parent"),
 
 @tBot.set_get_status_fn
 def status():
-    return "some"
+
+    log.debug(f"weather={weather.get_data()}")
+    status ="Вулиця"
+    status =status+"\n"+get_value(weather.get_data(),'temperature')
+    status = status +"\n"+ get_value(weather.get_data(), 'battery')
+    if 'psu' in globals():
+        log.debug(f"psu={psu.get_data()}")
+        status = status +"\n"+"Живлення"
+        status = status +"\n"+ get_value(psu.get_data(), 'BAT_OK')
+        status = status + "\n" + get_value(psu.get_data(), 'V220')
+    log.info(f"send status={status}")
+    return status
 
 @tBot.set_config_updated_cb
 def config_updated(cfg):
     with open(config_file, 'w') as file:
         config['telegram']=cfg
         yaml.dump(config, file)
-        print('config_updated =', config)
+        log.info(f"config_updated={config}")
+
+def tbot_send_notice(text:str):
+    log.info(f"send notice={text}, to={config['telegram']['subscribers']}" )
+    url = f"https://api.telegram.org/bot{config['telegram']['token']}/sendMessage"
+    for id in config['telegram']['subscribers']:
+        params = {
+           "chat_id": id,
+           "text": text,
+        }
+        resp = requests.get(url, params=params)
 
 def json_dumps_fround(field):
     def json_round_floats(o):
@@ -61,6 +85,8 @@ def json_dumps_fround(field):
 
 def psu_state_update(state):
     socketio.emit('update_psu', state)
+    tbot_send_notice(f'PSU{state}')
+
 
 def mqtt_handler_wrapper(handler,event,msg):
     handler.on_message(msg)
@@ -72,21 +98,20 @@ def start():
         mqtt_module.subscribe(el.get_topic(), partial(mqtt_handler_wrapper, el,"update_room"))
     if 'psu' in globals():
         psu.set_cb(psu_state_update)
-    def tbot_thread():
+    def tbot_thread(loop):
+        asyncio.set_event_loop(loop)
         asyncio.run(tBot.start(config["telegram"]))
-    threading.Thread(target=tbot_thread, name='telebot').start()
+    threading.Thread(target=tbot_thread, name='telebot',args= (event_loop,)).start()
+
 
 """
 Serve root index file
 """
 
-def send_notice_wrapper():
-    asyncio.run(tBot.send_notice("zzxczxczxc"))
-
 @app.route("/")
 @app.route("/outdoors")
 def outdoors_page():
-    threading.Thread(target=send_notice_wrapper).start()
+    #tbot_send_notice("test tbot_send_notice")
     return render_template("outdoors.html")
 
 @app.route("/rooms")
@@ -112,7 +137,6 @@ def connect():
         update["rooms"].append(el.get_data())
     socketio.emit("update", update)
 
-
 """
 Decorator for disconnect
 """
@@ -123,5 +147,6 @@ def disconnect():
     print("Client disconnected", request.sid)
 
 start()
+
 #if __name__ == "__main__":
 #    socketio.run(app, port=5000, host="0.0.0.0", debug=True)

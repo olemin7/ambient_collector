@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 def create_val(val):
 	return {'value':int(val*100)/100,'ts':int(time.time())}
 
@@ -24,6 +25,28 @@ def add_value(to_dict, to_field, value, period_sec):
 		pass
 	to_dict[to_field]=history_data
 	pass
+
+def ts_to_str(ts:int):
+	delta = int(time.time()) - ts;
+	if delta < 60:
+		return f"{delta}s"
+	elif delta < 60 * 60:
+		return f"{int(delta/60)}m"
+	else:
+		return f"{datetime.fromtimestamp(ts).strftime('%d %b %Y %H:%M')}"
+
+def get_value(from_dict,from_field):
+	res=f"{from_field}="
+	if from_field in from_dict:
+		if len(from_dict[from_field]) == 0:
+			res=res+"empty"
+		else:
+			last_element = from_dict[from_field][-1]
+			res=res+str(last_element["value"])
+			res = res + f" ({ts_to_str(last_element['ts'])})"
+	else:
+		res=res+ 'none'
+	return  res
 
 def add_value_dict(to_dict, to_field, from_dict, from_field, period_sec):
 	if from_field in from_dict:
