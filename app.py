@@ -7,11 +7,25 @@ try:
     psu = CGPIOpsu()
 except (ImportError, RuntimeError):
     pass
+
+from telebot.async_telebot import AsyncTeleBot
 from tbot_module import TBot
 from functools import partial
 import yaml
+import asyncio
+import threading
+import logging
 
+logging.basicConfig(format=' %(levelname)s %(asctime)s:%(filename)s:%(lineno)d: %(message)s', level = logging.DEBUG)
+log =logging.getLogger('logger')
+log.setLevel(logging.DEBUG)
 config={}
+config_file="config.yaml"
+with open(config_file, "r") as f:
+    config = yaml.load(f, Loader=yaml.FullLoader)
+    log.info(f"config={config}")
+
+tBot = TBot()
 mqtt_module=mqttModule()
 
 app = Flask(__name__)
@@ -23,6 +37,16 @@ rooms_data=[CClock("Батьки","stat/clock_parent"),
        CClock("Діти","stat/clock_children"),
        CClock("Майстерня","stat/clock_workshop")]
 
+@tBot.set_get_status_fn
+def status():
+    return "some"
+
+@tBot.set_config_updated_cb
+def config_updated(cfg):
+    with open(config_file, 'w') as file:
+        config['telegram']=cfg
+        yaml.dump(config, file)
+        print('config_updated =', config)
 
 def json_dumps_fround(field):
     def json_round_floats(o):
@@ -43,22 +67,26 @@ def mqtt_handler_wrapper(handler,event,msg):
     socketio.emit(event, handler.get_data())
 
 def start():
-    with open("config.yaml", "r") as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
-    print('config=',config)
     mqtt_module.subscribe(weather.get_topic(),partial(mqtt_handler_wrapper,weather,"update_weather"))
     for el in rooms_data:
         mqtt_module.subscribe(el.get_topic(), partial(mqtt_handler_wrapper, el,"update_room"))
     if 'psu' in globals():
         psu.set_cb(psu_state_update)
+    def tbot_thread():
+        asyncio.run(tBot.start(config["telegram"]))
+    threading.Thread(target=tbot_thread, name='telebot').start()
 
 """
 Serve root index file
 """
 
+def send_notice_wrapper():
+    asyncio.run(tBot.send_notice("zzxczxczxc"))
+
 @app.route("/")
 @app.route("/outdoors")
 def outdoors_page():
+    threading.Thread(target=send_notice_wrapper).start()
     return render_template("outdoors.html")
 
 @app.route("/rooms")
