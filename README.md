@@ -43,3 +43,5 @@ sudo systemctl restart weather_stantion.service
 sudo systemctl stop weather_stantion.service
 sudo systemctl enable weather_stantion.service
 journalctl -u weather_stantion.service -f
+
+sshfs olemin@central.local:/home/olemin/ -p 22 ~/mnt

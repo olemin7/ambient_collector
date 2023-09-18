@@ -2,6 +2,7 @@ from typing import Callable,Optional
 import asyncio
 import telebot
 from telebot.async_telebot import AsyncTeleBot
+import requests
 import logging
 log= logging.getLogger('logger')
 
@@ -98,6 +99,17 @@ class TBot:
 
     def add_command(self, cmd:str,scope,description:str,handler:Callable):
         self.__cmds[cmd] = {'description': description, 'handler':handler,'scope': scope}
+
+
+def tbot_send_https_notice(config:dict,text:str):
+    log.info(f"send notice={text}, to={config['subscribers']}" )
+    url = f"https://api.telegram.org/bot{config['token']}/sendMessage"
+    for id in config['telegram']['subscribers']:
+        params = {
+           "chat_id": id,
+           "text": text,
+        }
+        resp = requests.get(url, params=params)
 
 if __name__ == "__main__":
     import yaml

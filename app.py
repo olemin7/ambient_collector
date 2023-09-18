@@ -9,13 +9,12 @@ try:
 except (ImportError, RuntimeError):
     pass
 
-from tbot_module import TBot
+from tbot_module import TBot,tbot_send_https_notice
 from functools import partial
 import yaml
 import asyncio
 import threading
 import logging
-import requests
 
 logging.basicConfig(format=' %(levelname)s %(asctime)s:%(filename)s:%(lineno)d: %(message)s', level = logging.DEBUG)
 log =logging.getLogger('logger')
@@ -45,13 +44,13 @@ def status():
 
     log.debug(f"weather={weather.get_data()}")
     status ="Вулиця"
-    status =status+"\n"+get_value(weather.get_data(),'temperature')
-    status = status +"\n"+ get_value(weather.get_data(), 'battery')
+    status =status+"\n"+get_value_ts(weather.get_data(),'temperature')
+    status = status +"\n"+ get_value_ts(weather.get_data(), 'battery')
     if 'psu' in globals():
         log.debug(f"psu={psu.get_data()}")
         status = status +"\n"+"Живлення"
-        status = status +"\n"+ get_value(psu.get_data(), 'BAT_OK')
-        status = status + "\n" + get_value(psu.get_data(), 'V220')
+        status = status +"\n"+ get_value_ts(psu.get_data(), 'BAT_OK')
+        status = status + "\n" + get_value_ts(psu.get_data(), 'V220')
     log.info(f"send status={status}")
     return status
 
@@ -61,16 +60,6 @@ def config_updated(cfg):
         config['telegram']=cfg
         yaml.dump(config, file)
         log.info(f"config_updated={config}")
-
-def tbot_send_notice(text:str):
-    log.info(f"send notice={text}, to={config['telegram']['subscribers']}" )
-    url = f"https://api.telegram.org/bot{config['telegram']['token']}/sendMessage"
-    for id in config['telegram']['subscribers']:
-        params = {
-           "chat_id": id,
-           "text": text,
-        }
-        resp = requests.get(url, params=params)
 
 def json_dumps_fround(field):
     def json_round_floats(o):
@@ -85,7 +74,10 @@ def json_dumps_fround(field):
 
 def psu_state_update(state):
     socketio.emit('update_psu', state)
-    tbot_send_notice(f'PSU{state}')
+    status =  "Живлення"
+    status = status + "\n" + get_value(psu.get_data(), 'BAT_OK')
+    status = status + "\n" + get_value(psu.get_data(), 'V220')
+    tbot_send_https_notice(config['telegram'],status)
 
 
 def mqtt_handler_wrapper(handler,event,msg):

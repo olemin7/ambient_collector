@@ -43,10 +43,17 @@ def get_value(from_dict,from_field):
 		else:
 			last_element = from_dict[from_field][-1]
 			res=res+str(last_element["value"])
-			res = res + f" ({ts_to_str(last_element['ts'])})"
 	else:
 		res=res+ 'none'
-	return  res
+	return res
+
+def get_value_ts(from_dict,from_field):
+	res=get_value(from_dict,from_field)
+	if from_field in from_dict:
+		if len(from_dict[from_field]) != 0:
+			last_element = from_dict[from_field][-1]
+			res = res + f" ({ts_to_str(last_element['ts'])})"
+	return res
 
 def add_value_dict(to_dict, to_field, from_dict, from_field, period_sec):
 	if from_field in from_dict:
