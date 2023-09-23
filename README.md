@@ -45,3 +45,4 @@ sudo systemctl enable weather_stantion.service
 journalctl -u weather_stantion.service -f
 
 sshfs olemin@central.local:/home/olemin/ -p 22 ~/mnt
+ssh olemin@central.local

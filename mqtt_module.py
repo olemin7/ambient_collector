@@ -1,6 +1,8 @@
 import paho.mqtt.client as mqtt
 from collector import *
 import json
+import logging
+log= logging.getLogger('logger')
 
 mqtt_server="central.local"
 mqtt_port=1883
@@ -19,41 +21,41 @@ class mqttModule:
         pass
 
     def _on_connection_changes(self,state):
-        print("conection state= ",state)
+        log.info(f"conection state= {state}")
         pass
 
     def _on_log(self,client, userdata, level, buf):
-        print("log: ",buf)
+        log.info(f"log: {buf}")
         pass
 
     def _on_message(self,client, userdata, message):
         msg_dict=json.loads(message.payload.decode("utf-8"))
-        print("message received  ",msg_dict, "topic",message.topic,"retained ",message.retain)
+        log.info(f"message received  {msg_dict}, topic={message.topic}, retained {message.retain}")
         if message.topic in self._subscribtion:
             self._subscribtion[message.topic](msg_dict)
         if message.retain==1:
-            print("This is a retained message")
+            log.info("This is a retained message")
         pass
         
     def _on_connect(self, client, userdata, flags, rc):
         if rc==0:
-            print("connected OK")
+            log.info("connected OK")
             for topic in self._subscribtion.keys():
                 self._subscribe(topic)
             self.on_connection_changes(True)
         else:
-            print("Bad connection Returned code=",rc)
+            log.info("Bad connection Returned code=",rc)
         pass
 
     def _on_disconnect(self, client, userdata, rc):
-        print("disconnecting reason  "  +str(rc))
+        log.info(f"disconnecting reason { str(rc)}")
         self.on_connection_changes(False)
 #        self._client.connect(mqtt_server, mqtt_port)
         pass
 
     def _subscribe(self,topic):
         if  self._client.is_connected():
-            print("mqtt subscribe topic ",topic);
+            log.info(f"mqtt subscribe topic {topic}");
             self._client.subscribe(topic)
             pass
         pass
@@ -109,6 +111,5 @@ class CClock(CObjCommon):
         set_value(self._data, "temperature", msg, "temperature")
         set_value(self._data, "humidity", msg, "humidity")
         set_value(self._data, "rssi", msg, "rssi")
-        print(msg)
         pass
     pass

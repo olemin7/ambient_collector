@@ -1,5 +1,8 @@
 import time
 from datetime import datetime
+import logging
+log= logging.getLogger('logger')
+
 def create_val(val):
 	return {'value':int(val*100)/100,'ts':int(time.time())}
 
@@ -78,7 +81,7 @@ def history_pack(from_dict,from_field,period_sec,step_sec):
 				pass
 			pass
 		pass
-	print("sorted", tmp)
+	log.info("sorted", tmp)
 	values=[]
 	for key in tmp:
 		summ=0
@@ -89,5 +92,5 @@ def history_pack(from_dict,from_field,period_sec,step_sec):
 		values.append(summ/len(accum))
 		pass
 	result={'period_sec':period_sec,'step_sec':step_sec,'values':values}
-	print( "values:", result)
+	log.info( "values:", result)
 	return result

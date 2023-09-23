@@ -104,7 +104,7 @@ class TBot:
 def tbot_send_https_notice(config:dict,text:str):
     log.info(f"send notice={text}, to={config['subscribers']}" )
     url = f"https://api.telegram.org/bot{config['token']}/sendMessage"
-    for id in config['telegram']['subscribers']:
+    for id in config['subscribers']:
         params = {
            "chat_id": id,
            "text": text,

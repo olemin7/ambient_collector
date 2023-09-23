@@ -18,6 +18,7 @@ import logging
 
 logging.basicConfig(format=' %(levelname)s %(asctime)s:%(filename)s:%(lineno)d: %(message)s', level = logging.DEBUG)
 log =logging.getLogger('logger')
+
 log.setLevel(logging.DEBUG)
 config={}
 config_file="config.yaml"
@@ -41,7 +42,6 @@ rooms_data=[CClock("Батьки","stat/clock_parent"),
 
 @tBot.set_get_status_fn
 def status():
-
     log.debug(f"weather={weather.get_data()}")
     status ="Вулиця"
     status =status+"\n"+get_value_ts(weather.get_data(),'temperature')
@@ -82,10 +82,15 @@ def psu_state_update(state):
 
 def mqtt_handler_wrapper(handler,event,msg):
     handler.on_message(msg)
+    # bot_send_https_notice(config['telegram'], "low bat")
     socketio.emit(event, handler.get_data())
 
+def mqtt_on_weather( msg):
+    weather.on_message(msg)
+    socketio.emit("update_weather", weather.get_data())
+
 def start():
-    mqtt_module.subscribe(weather.get_topic(),partial(mqtt_handler_wrapper,weather,"update_weather"))
+    mqtt_module.subscribe(weather.get_topic(),mqtt_on_weather)
     for el in rooms_data:
         mqtt_module.subscribe(el.get_topic(), partial(mqtt_handler_wrapper, el,"update_room"))
     if 'psu' in globals():
