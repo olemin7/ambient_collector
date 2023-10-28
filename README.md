@@ -3,6 +3,8 @@ A DHT Weather Station project using Python, Flask, Flask-SocketIO, and Bootstrap
   
 ## Writeup
 https://www.donskytech.com/raspberry-pi-dht22-weather-station-project/
+sudo apt install python3 python3-venv python3-flask python3-pip
+sudo apt install libsystemd-dev
 
 python -m venv .venv
 source .venv/bin/activate

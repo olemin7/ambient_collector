@@ -15,9 +15,11 @@ import yaml
 import asyncio
 import threading
 import logging
+from systemd import journal
 
 logging.basicConfig(format=' %(levelname)s %(asctime)s:%(filename)s:%(lineno)d: %(message)s', level = logging.DEBUG)
 log =logging.getLogger('logger')
+log.addHandler(journal.JournaldLogHandler())
 
 log.setLevel(logging.DEBUG)
 config={}

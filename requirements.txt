@@ -26,3 +26,4 @@ gunicorn
 pyTelegramBotAPI
 PyYAML
 aiohttp
+systemd-python
