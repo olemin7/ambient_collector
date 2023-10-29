@@ -12,6 +12,7 @@ source .venv/bin/activate
 3. Install the dependencies
 ```
 pip install -r requirements.txt
+pip install systemd
 cp config_.yaml config.yaml
 ```
 
@@ -48,3 +49,5 @@ journalctl -u weather_stantion.service -f
 
 sshfs olemin@central.local:/home/olemin/ -p 22 ~/mnt
 ssh olemin@central.local
+
+https://towardsdatascience.com/how-to-add-on-screen-logging-to-your-flask-application-and-deploy-it-on-aws-elastic-beanstalk-aa55907730f

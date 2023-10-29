@@ -97,8 +97,8 @@ class CWeather(CObjCommon):
             set_value(self._data, "humidity", msg["weather"], "humidity")
             add_value_dict(self._data, "temperature", msg["weather"], "temperature", 7 * 24 * 60 * 60)
             set_value(self._data, "ambient_light", msg["weather"], "ambient_light")
-        if "battery" in msg:
-            set_value(self._data, "battery", msg["battery"], "percentage")
+
+        set_value(self._data, "battery", msg, "battery")
         if "wifi" in msg:
             set_value(self._data, "rssi", msg["wifi"], "rssi")
 
