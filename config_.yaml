@@ -1,1 +1,5 @@
-tbot_token: 'dfdfdf'
+telegram:
+  token: 111
+mqtt:
+  server: ""
+  port: 1883

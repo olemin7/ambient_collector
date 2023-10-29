@@ -14,11 +14,13 @@ class mqttModule:
         self._client.on_message=self._on_message
         self._client.on_connect=self._on_connect
         self._client.on_disconnect=self._on_disconnect
-        self._client.connect(mqtt_server, mqtt_port)
         self.on_connection_changes=self._on_connection_changes
         self._subscribtion=dict()
-        self._client.loop_start()
         pass
+
+    def start(self, config):
+        self._client.connect(config["server"], config["port"])
+        self._client.loop_start()
 
     def _on_connection_changes(self,state):
         log.info(f"conection state= {state}")

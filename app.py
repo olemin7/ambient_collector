@@ -19,7 +19,7 @@ from systemd import journal
 
 logging.basicConfig(format=' %(levelname)s %(asctime)s:%(filename)s:%(lineno)d: %(message)s', level = logging.DEBUG)
 log =logging.getLogger('logger')
-log.addHandler(journal.JournaldLogHandler())
+log.addHandler(journal.JournalHandler())
 
 log.setLevel(logging.DEBUG)
 config={}
@@ -92,6 +92,7 @@ def mqtt_on_weather( msg):
     socketio.emit("update_weather", weather.get_data())
 
 def start():
+    mqtt_module.start(config["mqtt"])
     mqtt_module.subscribe(weather.get_topic(),mqtt_on_weather)
     for el in rooms_data:
         mqtt_module.subscribe(el.get_topic(), partial(mqtt_handler_wrapper, el,"update_room"))
