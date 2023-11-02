@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Weather Station Project</title>
+    <link href="{{url_for('static', filename = 'bootstrap530/css/bootstrap.min.css')}}" rel="stylesheet"/>
+    <link href="{{url_for('static', filename = 'index.css')}}" rel="stylesheet"/>
+    <script type="text/javascript" src="{{ url_for('static', filename = 'jquery-3.7.0.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename = '/bootstrap530/js/bootstrap.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename = 'date.format.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename = '/socket_io_460/socket.io.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename = 'common.js') }}" defer></script>
+{% block head %}
+{% endblock %}
+  </head>
+  <body>
+  <header>
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Central</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarCollapse"
+          aria-controls="navbarCollapse"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+          <ul class="navbar-nav me-auto mb-2 mb-md-0">
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="outdoors">Outdoors</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="rooms">Rooms</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="power220">220</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="things">Things</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+{% block content %}
+{% endblock %}
+  <footer class="footer mt-auto py-3 bg-dark">
+    <div class="container text-center">
+      <span class="text-white">&copy;2023</span>
+    </div>
+  </footer>
+  {% block final %}
+  {% endblock %}
+  </body>
+</html>
+
+

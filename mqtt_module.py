@@ -2,10 +2,9 @@ import paho.mqtt.client as mqtt
 from collector import *
 import json
 import logging
-log= logging.getLogger('logger')
+from thing import CThing
 
-mqtt_server="central.local"
-mqtt_port=1883
+log= logging.getLogger('logger')
 
 class mqttModule:
     def __init__(self):
@@ -52,7 +51,6 @@ class mqttModule:
     def _on_disconnect(self, client, userdata, rc):
         log.info(f"disconnecting reason { str(rc)}")
         self.on_connection_changes(False)
-#        self._client.connect(mqtt_server, mqtt_port)
         pass
 
     def _subscribe(self,topic):
@@ -69,49 +67,35 @@ class mqttModule:
             pass
         pass
 
-class CObjCommon:
-    object_id=0
-    def __init__(self,name,topic):
-        CObjCommon.object_id += 1
-        self._data = {}
-        self._data["name"]=name
-        self._data["topic"] = topic
-        self._data["id"] = CObjCommon.object_id
+class CWiFi(CThing):
+    def __init__(self, name, topic, masks:set):
+        super().__init__(name, topic, masks)
         pass
-    def get_name(self):
-        return self._data["name"]
-    def get_topic(self):
-        return self._data["topic"]
-    def get_data(self):
-        return self._data
-    def get_id(self):
-        return self._data["id"]
-    pass
 
-class CWeather(CObjCommon):
-    def __init__(self,name,topic):
-        super().__init__(name,topic)
+    def on_message(self, msg):
+        set_value(self._data, "wifi", msg, "wifi")
+        set_if_present(self._data, "mqtt_period", msg, "mqtt_period")
+
+class CWeather(CWiFi):
+    def __init__(self,name,topic, masks:set):
+        super().__init__(name,topic,masks)
         pass
 
     def on_message(self,msg):
+        super().on_message(msg)
         if "weather" in msg:
             add_value_dict(self._data, "pressure", msg["weather"], "pressure", 7 * 24 * 60 * 60)
             set_value(self._data, "humidity", msg["weather"], "humidity")
             add_value_dict(self._data, "temperature", msg["weather"], "temperature", 7 * 24 * 60 * 60)
             set_value(self._data, "ambient_light", msg["weather"], "ambient_light")
-
         set_value(self._data, "battery", msg, "battery")
-        if "wifi" in msg:
-            set_value(self._data, "rssi", msg["wifi"], "rssi")
 
-class CClock(CObjCommon):
-    def __init__(self,name,topic):
-        super().__init__(name,topic)
-        pass
+class CClock(CWiFi):
+    def __init__(self,name,topic,masks:set):
+        super().__init__(name,topic,masks)
 
     def on_message(self,msg):
+        super().on_message(msg)
         set_value(self._data, "temperature", msg, "temperature")
         set_value(self._data, "humidity", msg, "humidity")
-        set_value(self._data, "rssi", msg, "rssi")
-        pass
-    pass
+

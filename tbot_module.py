@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
     @tBot.set_get_status_fn
     def status():
-        return "nothinh"
+        return "nothing"
 
     with open("config.yaml", "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)

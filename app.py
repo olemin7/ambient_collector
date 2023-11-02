@@ -16,10 +16,15 @@ import asyncio
 import threading
 import logging
 from systemd import journal
+import csv
 
 logging.basicConfig(format=' %(levelname)s %(asctime)s:%(filename)s:%(lineno)d: %(message)s', level = logging.DEBUG)
 log =logging.getLogger('logger')
-log.addHandler(journal.JournalHandler())
+
+try:
+    log.addHandler(journal.JournalHandler())
+except (ImportError, RuntimeError):
+    log.addHandler(journal.JournaldLogHandler())
 
 log.setLevel(logging.DEBUG)
 config={}
@@ -37,10 +42,12 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 event_loop=asyncio.new_event_loop()
 asyncio.set_event_loop(event_loop)
 
-weather =CWeather("Вулиця","sensors/weather")
-rooms_data=[CClock("Батьки","stat/clock_parent"),
-       CClock("Діти","stat/clock_children"),
-       CClock("Майстерня","stat/clock_workshop")]
+weather=CWeather("Вулиця","sensors/weather",["weather"])
+things=[weather,
+       CClock("Батьківська","stat/clock_parent",["room"]),
+       CClock("Дитяча","stat/clock_children",["room"]),
+       CClock("Майстерня","stat/clock_workshop",["room"])
+    ]
 
 @tBot.set_get_status_fn
 def status():
@@ -82,22 +89,14 @@ def psu_state_update(state):
     tbot_send_https_notice(config['telegram'],status)
 
 
-def mqtt_handler_wrapper(handler,event,msg):
-    handler.on_message(msg)
-    # bot_send_https_notice(config['telegram'], "low bat")
-    socketio.emit(event, handler.get_data())
-
-def mqtt_on_weather( msg):
-    weather.on_message(msg)
-    socketio.emit("update_weather", weather.get_data())
+def mqtt_thing_wrapper(thing,msg):
+    thing.on_message(msg)
+    socketio.emit("thing", thing.get_data())
 
 def start():
     mqtt_module.start(config["mqtt"])
-    mqtt_module.subscribe(weather.get_topic(),mqtt_on_weather)
-    for el in rooms_data:
-        mqtt_module.subscribe(el.get_topic(), partial(mqtt_handler_wrapper, el,"update_room"))
-    if 'psu' in globals():
-        psu.set_cb(psu_state_update)
+    for el in things:
+        mqtt_module.subscribe(el.get_topic(), partial(mqtt_thing_wrapper, el))
     def tbot_thread(loop):
         asyncio.set_event_loop(loop)
         asyncio.run(tBot.start(config["telegram"]))
@@ -116,11 +115,19 @@ def outdoors_page():
 
 @app.route("/rooms")
 def rooms_page():
-    return render_template("rooms.html",rooms=rooms_data)
+    rooms=[]
+    for el in things:
+        if "room" in el.get_masks():
+            rooms.append(el)
+    return render_template("rooms.html",rooms=rooms)
 
-@app.route("/psu")
+@app.route("/power220")
 def psu_page():
-    return render_template("psu.html")
+    return render_template("power220.html")
+
+@app.route("/things")
+def things_page():
+    return render_template("things.html",things=things)
 
 """
 Decorator for connect
@@ -129,12 +136,10 @@ Decorator for connect
 @socketio.on("connect")
 def connect():
     print("Client connected")
-    update={'weather':weather.get_data(),'rooms':[]}
-    if 'psu' in globals():
-        update['psu']=psu.get_data()
+    update={'things':[]}
 
-    for el in rooms_data:
-        update["rooms"].append(el.get_data())
+    for el in things:
+        update["things"].append(el.get_data())
     socketio.emit("update", update)
 
 """

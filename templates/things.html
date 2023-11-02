@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block head %}
+  <script type="text/javascript" src="{{ url_for('static', filename = 'things.js') }}" ></script>
+{% endblock %}
+{% block content %}
+  <div class="container-fluid content mt-5">
+    <div class="row">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom border-danger">
+        <h1 class="h2 text-danger">Things</h1>
+        <div class="row"></div>
+      </div>
+    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Topic</th>
+          <th scope="col">Name</th>
+          <th scope="col">ip</th>
+          <th scope="col">rssi</th>
+          <th scope="col">battery</th>
+          <th scope="col">updated</th>
+          <th scope="col">misk</th>
+        </tr>
+      </thead>
+      <tbody>
+        {%for thing in things%}
+        {% set id= thing.get_id() %}
+        <tr>
+          <th scope="row">{{thing.get_topic()}}</th>
+          <td>{{thing.get_name()}}</td>
+          <td id="ip_{{id}}"></td>
+          <td id="rssi_{{id}}"></td>
+          <td id="battery_{{id}}"></td>
+          <td id="updated_{{id}}"></td>
+          <td id="misk_{{id}}"></td>
+        </tr>
+        {%endfor%}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

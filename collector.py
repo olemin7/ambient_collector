@@ -4,11 +4,21 @@ import logging
 log= logging.getLogger('logger')
 
 def create_val(val):
-	return {'value':int(val*100)/100,'ts':int(time.time())}
+	try:
+		val_=int(val*100)/100
+	except(ValueError,TypeError):
+		val_=val
+	return {'value':val_,'ts':int(time.time())}
 
 def set_value(to_dict,to_field,from_dict,from_field):
 	if from_field in from_dict:
 		to_dict[to_field]=[create_val(from_dict[from_field])]
+		pass
+	pass
+
+def set_if_present(to_dict, to_field, from_dict, from_field):
+	if from_field in from_dict:
+		to_dict[to_field]=from_dict[from_field]
 		pass
 	pass
 

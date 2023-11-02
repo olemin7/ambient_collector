@@ -1,9 +1,6 @@
 var graphConfig = { displayModeBar: false, responsive: true,};
 
-function ts_to_date(ts){
-        date =new Date(ts*1000)
-        return dateFormat(date,"isoDateTime")
-}
+
 
 function history_comparation(div_name, name, vals){
     var temperatureHistoryDiv = document.getElementById(div_name);
@@ -113,39 +110,27 @@ function getLastVal(vals) {
     }
 }
 
-function updateWeatherData(weather) {
-    if(weather.temperature){
-        $("#temperature").html(getLastVal(weather.temperature).toFixed(1) + " C")
-        history_comparation("temperature_cmp","Temperature",weather.temperature)
+function update_thing(thing) {
+     if(thing.masks.indexOf("weather")!=-1){
+        if(thing.temperature){
+            $("#temperature").html(getLastVal(thing.temperature).toFixed(1) + " C")
+            history_comparation("temperature_cmp","Temperature",thing.temperature)
+        }
+        if(thing.humidity){
+            $("#humidity").html(getLastVal(thing.humidity).toFixed(1) + " %")
+        }
+        if(thing.pressure){
+            $("#pressure").html(getLastVal(thing.pressure).toFixed(0) + " mPa")
+        }
+        if(thing.ambient_light){
+            $("#ambient_light").html(getLastVal(thing.ambient_light).toFixed(0) + " Lux")
+        }
+        if(thing.battery){
+            $("#battery").html(getLastVal(thing.battery).toFixed(0)+" %" )
+        }
+        if(thing.temperature && thing.pressure){
+            history_double("history","Temperature",thing.temperature,"Pressure",thing.pressure)
+        }
     }
-    if(weather.humidity){
-        $("#humidity").html(getLastVal(weather.humidity).toFixed(1) + " %")
-    }
-    if(weather.pressure){
-        $("#pressure").html(getLastVal(weather.pressure).toFixed(0) + " mPa")
-    }
-    if(weather.ambient_light){
-        $("#ambient_light").html(getLastVal(weather.ambient_light).toFixed(0) + " Lux")
-    }
-    if(weather.battery){
-        $("#battery").html(getLastVal(weather.battery).toFixed(0)+" %" )
-    }
-    history_double("history","Temperature",weather.temperature,"Pressure",weather.pressure)
 }
-/*
-  SocketIO Code
-*/
-var socket = io.connect();
 
-//receive details from server
-socket.on("update_weather", function (msg) {
-  console.log(msg)
-  updateWeatherData(msg);
-});
-
-socket.on("update", function (msg) {
-  console.log(msg)
-  if (msg.weather){
-    updateWeatherData(msg.weather);
-  }
-});
