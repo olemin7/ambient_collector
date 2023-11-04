@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User=olemin
 WorkingDirectory=/home/olemin/weather_station_server
-ExecStart=/home/olemin/weather_station_server/.venv/bin/flask --no-debug run --host=0.0.0.0 -p 8080
+ExecStart=/home/olemin/weather_station_server/.venv/bin/flask --no-debug run --host=0.0.0.0 -p 8088
 Restart=always
 
 [Install]

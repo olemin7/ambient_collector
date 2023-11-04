@@ -22,7 +22,7 @@ def set_if_present(to_dict, to_field, from_dict, from_field):
 		pass
 	pass
 
-def add_value(to_dict, to_field, value, period_sec):
+def add_record(to_dict, to_field, value, period_sec):
 	ts=int(time.time())
 	history_data=[]
 	if to_field in to_dict:
@@ -38,6 +38,11 @@ def add_value(to_dict, to_field, value, period_sec):
 		pass
 	to_dict[to_field]=history_data
 	pass
+
+def get_latest_record(from_dict, from_field):
+	if from_field in from_dict and len(from_dict[from_field]):
+		return from_dict[from_field][-1]
+	return None
 
 def ts_to_str(ts:int):
 	delta = int(time.time()) - ts;
@@ -70,10 +75,10 @@ def get_value_ts(from_dict,from_field):
 
 def add_value_dict(to_dict, to_field, from_dict, from_field, period_sec):
 	if from_field in from_dict:
-		add_value(to_dict, to_field,from_dict[from_field],period_sec)
+		add_record(to_dict, to_field, from_dict[from_field], period_sec)
 		pass
 	else:
-		add_value(to_dict, to_field, None, period_sec)
+		add_record(to_dict, to_field, None, period_sec)
 		pass
 	pass
 

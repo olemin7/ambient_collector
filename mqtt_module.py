@@ -67,22 +67,30 @@ class mqttModule:
             pass
         pass
 
-class CWiFi(CThing):
-    def __init__(self, name, topic, masks:set):
-        super().__init__(name, topic, masks)
-        pass
+class CMQTTThing(CThing):
+    def __init__(self, name, topic:str, masks:list):
+        masks.append("mqtt")
+        super().__init__(name, masks)
+        self._data["topic"] = topic
+
+    def get_topic(self):
+        return self._data["topic"]
+
+    def _on_message(self, msg):
+        set_if_present(self._data, "wifi", msg, "wifi")
+        set_if_present(self._data, "upd_period", msg, "upd_period")
 
     def on_message(self, msg):
-        set_value(self._data, "wifi", msg, "wifi")
-        set_if_present(self._data, "mqtt_period", msg, "mqtt_period")
+        self._on_message(msg)
+        self._update()
 
-class CWeather(CWiFi):
+class CWeather(CMQTTThing):
     def __init__(self,name,topic, masks:set):
         super().__init__(name,topic,masks)
         pass
 
-    def on_message(self,msg):
-        super().on_message(msg)
+    def _on_message(self,msg):
+        super()._on_message(msg)
         if "weather" in msg:
             add_value_dict(self._data, "pressure", msg["weather"], "pressure", 7 * 24 * 60 * 60)
             set_value(self._data, "humidity", msg["weather"], "humidity")
@@ -90,12 +98,12 @@ class CWeather(CWiFi):
             set_value(self._data, "ambient_light", msg["weather"], "ambient_light")
         set_value(self._data, "battery", msg, "battery")
 
-class CClock(CWiFi):
+class CClock(CMQTTThing):
     def __init__(self,name,topic,masks:set):
         super().__init__(name,topic,masks)
 
-    def on_message(self,msg):
-        super().on_message(msg)
+    def _on_message(self,msg):
+        super()._on_message(msg)
         set_value(self._data, "temperature", msg, "temperature")
         set_value(self._data, "humidity", msg, "humidity")
 

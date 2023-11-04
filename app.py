@@ -3,12 +3,7 @@ from flask import Flask, render_template, request
 from flask_socketio import SocketIO
 from mqtt_module import mqttModule, CWeather, CClock
 from collector import *
-try:
-    from gpio_module import CGPIOpsu
-    psu = CGPIOpsu()
-except (ImportError, RuntimeError):
-    pass
-
+from alive_tracker import *
 from tbot_module import TBot,tbot_send_https_notice
 from functools import partial
 import yaml
@@ -16,14 +11,16 @@ import asyncio
 import threading
 import logging
 from systemd import journal
-import csv
+from threading import Lock
 
 logging.basicConfig(format=' %(levelname)s %(asctime)s:%(filename)s:%(lineno)d: %(message)s', level = logging.DEBUG)
 log =logging.getLogger('logger')
+thread = None
+thread_lock = Lock()
 
 try:
     log.addHandler(journal.JournalHandler())
-except (ImportError, RuntimeError):
+except (ImportError, RuntimeError, AttributeError):
     log.addHandler(journal.JournaldLogHandler())
 
 log.setLevel(logging.DEBUG)
@@ -43,10 +40,12 @@ event_loop=asyncio.new_event_loop()
 asyncio.set_event_loop(event_loop)
 
 weather=CWeather("Вулиця","sensors/weather",["weather"])
+power220tracker=CAliveTracker("Живлення220",["power220"])
 things=[weather,
-       CClock("Батьківська","stat/clock_parent",["room"]),
-       CClock("Дитяча","stat/clock_children",["room"]),
-       CClock("Майстерня","stat/clock_workshop",["room"])
+        CClock("Батьківська","stat/clock_parent",["room","220powered"]),
+        CClock("Дитяча","stat/clock_children",["room","220powered"]),
+        CClock("Майстерня","stat/clock_workshop",["room","220powered"]),
+        power220tracker
     ]
 
 @tBot.set_get_status_fn
@@ -55,11 +54,6 @@ def status():
     status ="Вулиця"
     status =status+"\n"+get_value_ts(weather.get_data(),'temperature')
     status = status +"\n"+ get_value_ts(weather.get_data(), 'battery')
-    if 'psu' in globals():
-        log.debug(f"psu={psu.get_data()}")
-        status = status +"\n"+"Живлення"
-        status = status +"\n"+ get_value_ts(psu.get_data(), 'BAT_OK')
-        status = status + "\n" + get_value_ts(psu.get_data(), 'V220')
     log.info(f"send status={status}")
     return status
 
@@ -81,26 +75,35 @@ def json_dumps_fround(field):
         return o
     return json.dumps(json_round_floats(field))
 
-def psu_state_update(state):
-    socketio.emit('update_psu', state)
-    status =  "Живлення"
-    status = status + "\n" + get_value(psu.get_data(), 'BAT_OK')
-    status = status + "\n" + get_value(psu.get_data(), 'V220')
-    tbot_send_https_notice(config['telegram'],status)
+def on_power220_update(data):
+    curs_state =get_latest_record(data,"state")
+    if curs_state:
+        status =  f"живлення {curs_state['value']}"
+        tbot_send_https_notice(config['telegram'], status)
 
-
-def mqtt_thing_wrapper(thing,msg):
-    thing.on_message(msg)
-    socketio.emit("thing", thing.get_data())
+def socketio_background_thread():
+    while True:
+        log.debug("update")
+        power220tracker.refresh()
+        socketio.sleep(10)
 
 def start():
     mqtt_module.start(config["mqtt"])
     for el in things:
-        mqtt_module.subscribe(el.get_topic(), partial(mqtt_thing_wrapper, el))
+        el.subscribe(lambda data:socketio.emit("thing", data))
+        if "mqtt" in el.get_masks():
+            mqtt_module.subscribe(el.get_topic(), el.on_message)
+        if("220powered" in el.get_masks()):
+            el.subscribe(power220tracker.update)
+    power220tracker.subscribe(on_power220_update)
     def tbot_thread(loop):
         asyncio.set_event_loop(loop)
         asyncio.run(tBot.start(config["telegram"]))
     threading.Thread(target=tbot_thread, name='telebot',args= (event_loop,)).start()
+    global thread
+    with thread_lock:
+        if thread is None:
+            thread = socketio.start_background_task(socketio_background_thread)
 
 
 """
@@ -136,8 +139,7 @@ Decorator for connect
 @socketio.on("connect")
 def connect():
     print("Client connected")
-    update={'things':[]}
-
+    update = {'things': []}
     for el in things:
         update["things"].append(el.get_data())
     socketio.emit("update", update)
@@ -145,8 +147,6 @@ def connect():
 """
 Decorator for disconnect
 """
-
-
 @socketio.on("disconnect")
 def disconnect():
     print("Client disconnected", request.sid)

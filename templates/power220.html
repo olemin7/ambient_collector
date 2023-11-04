@@ -1,34 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Weather Station Project</title>
-    <link href="{{url_for('static', filename = 'bootstrap530/css/bootstrap.min.css')}}" rel="stylesheet"/>
-    <link href="{{url_for('static', filename = 'index.css')}}" rel="stylesheet"/>
-    <script type="text/javascript" src="{{ url_for('static', filename = 'jquery-3.7.0.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename = '/bootstrap530/js/bootstrap.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename = 'plotly-2.24.1.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename = 'date.format.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename = '/socket_io_460/socket.io.min.js') }}"></script>
-  </head>
-  <body>
-  {% extends "layout.html" %}
+{% extends "layout.html" %}
+{% block head %}
+  <script type="text/javascript" src="{{ url_for('static', filename = 'plotly-2.24.1.min.js') }}"></script>
+ <script type="text/javascript" src="{{ url_for('static', filename = 'psu.js') }}"></script>
+{% endblock %}
   {% block content %}
     <div class="container-fluid content mt-5">
       <div class="row">
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom border-danger">
-          <h1 class="h2 text-danger">PSU</h1>
+          <h1 class="h2 text-danger">Мережа 220<span class="number" id="V220"></span></h1>
           <div class="row"></div>
         </div>
-      </div>
-      <div class="row">
-          <div class="col d-flex align-items-center justify-content-center rounded-3 p-1 shadow">
-            <h4 style="color: green">220 volt:<span class="number" id="V220">ok</span> </h4>
-          </div>
-          <div class="col d-flex align-items-center justify-content-center rounded-3 p-1 shadow">
-            <h4 style="color: blue">Battery:<span class="number" id="BAT_OK">ok</span> </h4>
-          </div>
       </div>
       <div class="row">
         <div class="p-3 border-top border-3 border-danger">
@@ -39,6 +20,3 @@
       </div>
     </div>
   {% endblock %}
-    <script type="text/javascript" src="{{ url_for('static', filename = 'psu.js') }}"></script>
-  </body>
-</html>

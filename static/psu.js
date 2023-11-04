@@ -1,8 +1,3 @@
-function ts_to_date(ts){
-        date =new Date(ts*1000)
-        return dateFormat(date,"isoDateTime")
-}
-
 function populate_graph(plots,values){
     plots.x=[]
     plots.y=[]
@@ -43,45 +38,15 @@ function history(vals){
     };
 
     var data_V220={mode:'lines'}
-    populate_graph(data_V220,vals.V220)
-    var data_BAT_OK={mode:'lines'}
-    populate_graph(data_BAT_OK,vals.BAT_OK)
+    populate_graph(data_V220,vals)
 
-    Plotly.newPlot( historyDiv,  [data_V220, data_BAT_OK],  layout,  graphConfig);
+    Plotly.newPlot( historyDiv,  [data_V220],  layout,  graphConfig);
 }
 
-
-function getLastValStr(vals) {
-    if(vals.length){
-        return (vals[vals.length-1].value)?"Ok":"Fail"
-    }else{
-        return '-'
-    }
-}
-
-function update(psu) {
-    if(psu.V220){
-        $("#V220").html(getLastValStr(psu.V220))
-    }
-    if(psu.BAT_OK){
-        $("#BAT_OK").html(getLastValStr(psu.BAT_OK))
-    }
-    history(psu)
-}
-/*
-  SocketIO Code
-*/
-var socket = io.connect();
-
-//receive details from server
-socket.on("update_psu", function (msg) {
-  console.log(msg)
-  update(msg);
-});
-
-socket.on("update", function (msg) {
-  console.log(msg)
-  if (msg.psu){
-    update(msg.psu);
-  }
-});
+function update_thing(thing) {
+     if(thing.masks.indexOf("power220")!=-1){
+        if(!isElementEmpty(thing.state))
+            $("#V220").html(getLastElement(thing.state).value?" норма":" відсутня")
+            history(thing.state)
+     }
+ }
