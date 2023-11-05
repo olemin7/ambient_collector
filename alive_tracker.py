@@ -21,13 +21,12 @@ class CAliveTracker(CThing):
         if state:
             self._data["timeout"] = int(time.time()+self._data["period"]*3/2)
         curs_state =get_latest_record(self._data,"state")
-        if curs_state and curs_state["value"]== state:
-            return
-        log.info(f"new state = {state}")
-        add_record(self._data, "state", state, 7 * 24 * 60 * 60)
-        if 0 == state:
-            self._data.pop("period")
-            self._data.pop("timeout")
+        if not curs_state or curs_state["value"] != state:
+            log.info(f"new state = {state}")
+            add_record(self._data, "state", state, 7 * 24 * 60 * 60)
+            if 0 == state:
+                self._data.pop("period")
+                self._data.pop("timeout")
         self._update()
 
     def refresh(self):

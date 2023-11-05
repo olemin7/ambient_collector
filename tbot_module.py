@@ -84,7 +84,7 @@ class TBot:
             commands=menu_commands,
         )
         await self.send_notice("Запуск, використовуйте /help")
-        await self.__tbot.polling()
+        await self.__tbot.polling(none_stop=True)
 
     async def send_notice(self, notice:str):
         log.debug(f'send_notice={notice}, subscribers={self.__config["subscribers"]}')

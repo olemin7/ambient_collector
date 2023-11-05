@@ -11,7 +11,7 @@ function refresh_ts(){
 
     refresh_ts_timer = setInterval(function() {
       refresh_ts();
-    }, 30000);
+    }, 1000);
 }
 
 function update_thing(thing) {

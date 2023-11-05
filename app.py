@@ -52,8 +52,9 @@ things=[weather,
 def status():
     log.debug(f"weather={weather.get_data()}")
     status ="Вулиця"
-    status =status+"\n"+get_value_ts(weather.get_data(),'temperature')
-    status = status +"\n"+ get_value_ts(weather.get_data(), 'battery')
+    status += "\n"+get_value_ts(weather.get_data(),'temperature')
+    status += "\n"+ get_value_ts(weather.get_data(), 'battery')
+    status += "220 "+ get_value_ts(power220tracker.get_data(),'state')
     log.info(f"send status={status}")
     return status
 
