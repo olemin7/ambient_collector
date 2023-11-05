@@ -91,12 +91,12 @@ def socketio_background_thread():
 def start():
     mqtt_module.start(config["mqtt"])
     for el in things:
-        el.subscribe(lambda data:socketio.emit("thing", data))
+        el.on_update(lambda data:socketio.emit("thing", data))
         if "mqtt" in el.get_masks():
             mqtt_module.subscribe(el.get_topic(), el.on_message)
         if("220powered" in el.get_masks()):
-            el.subscribe(power220tracker.update)
-    power220tracker.subscribe(on_power220_update)
+            el.on_update(power220tracker.update)
+    power220tracker.on_change(on_power220_update)
     def tbot_thread(loop):
         asyncio.set_event_loop(loop)
         asyncio.run(tBot.start(config["telegram"]))
