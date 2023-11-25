@@ -1,6 +1,4 @@
-var graphConfig = { displayModeBar: false, responsive: true,};
-
-
+var graphConfig = { displayModeBar: false,staticPlot: true};
 
 function history_comparation(div_name, name, vals){
     var temperatureHistoryDiv = document.getElementById(div_name);
@@ -79,7 +77,12 @@ function history_double(div_name, name, vals, name2, vals2){
       xaxis: {
         autorange: true,
       },
-      showlegend:false,
+      showlegend:true,
+      legend: {
+        x: 1,
+        xanchor: 'right',
+        y: 1
+      },
     };
 
     var data={mode:'lines' , name: name,}
@@ -100,14 +103,6 @@ function history_double(div_name, name, vals, name2, vals2){
 
     console.log(data)
     Plotly.newPlot( document.getElementById(div_name), [data,data2],  layout,  graphConfig);
-}
-
-function getLastVal(vals) {
-    if(vals.length){
-        return vals[vals.length-1].value
-    }else{
-        return 0
-    }
 }
 
 function update_thing(thing) {
@@ -133,4 +128,3 @@ function update_thing(thing) {
         }
     }
 }
-
