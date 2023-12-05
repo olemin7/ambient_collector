@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 from collector import *
 import json
 import logging
-from thing import CThing
+from thing import CCollectorThing
 
 log= logging.getLogger('logger')
 
@@ -67,43 +67,52 @@ class mqttModule:
             pass
         pass
 
-class CMQTTThing(CThing):
-    def __init__(self, name, topic:str, masks:list):
-        masks.append("mqtt")
-        super().__init__(name, masks)
+class CMQTTThing(CCollectorThing):
+    def __init__(self, name, topic:str, masks:set,config:dict):
+        super().__init__(name, config["persistance_dir"])
+        self.add_masks({"mqtt"})
+        self.add_masks(masks)
         self._data["topic"] = topic
+
 
     def get_topic(self):
         return self._data["topic"]
 
     def _on_message(self, msg):
-        set_if_present(self._data, "wifi", msg, "wifi")
-        set_if_present(self._data, "upd_period", msg, "upd_period")
+        set_if_present(self._data, "wifi", msg)
+        set_if_present(self._data, "upd_period", msg)
 
     def on_message(self, msg):
         self._on_message(msg)
         self._update()
 
 class CWeather(CMQTTThing):
-    def __init__(self,name,topic, masks:set):
-        super().__init__(name,topic,masks)
-        pass
+    def __init__(self,name,topic, masks:set,config:dict):
+        super().__init__(name,topic,masks,config)
+        self._collector.add_field( {"temperature", "humidity","pressure","ambient_light","battery"})
+        self._collector.set_period(24*30)
+        self._collector.finalise()
 
     def _on_message(self,msg):
         super()._on_message(msg)
         if "weather" in msg:
-            add_value_dict(self._data, "pressure", msg["weather"], "pressure", 7 * 24 * 60 * 60)
-            set_value(self._data, "humidity", msg["weather"], "humidity")
-            add_value_dict(self._data, "temperature", msg["weather"], "temperature", 7 * 24 * 60 * 60)
-            set_value(self._data, "ambient_light", msg["weather"], "ambient_light")
-        set_value(self._data, "battery", msg, "battery")
+            weather=msg["weather"]
+            set_if_present(self._collector_tmp, "pressure", weather)
+            set_if_present(self._collector_tmp, "humidity", weather)
+            set_if_present(self._collector_tmp, "temperature", weather)
+            set_if_present(self._collector_tmp, "ambient_light", weather)
+        set_if_present(self._collector_tmp, "battery", msg)
 
 class CClock(CMQTTThing):
-    def __init__(self,name,topic,masks:set):
-        super().__init__(name,topic,masks)
+    def __init__(self,name,topic,masks:set,config:dict):
+        super().__init__(name,topic,masks,config)
+        self._collector.add_field( {"temperature","humidity"})
+        self._collector.set_period(24*2)
+        self._collector.finalise()
 
     def _on_message(self,msg):
         super()._on_message(msg)
-        set_value(self._data, "temperature", msg, "temperature")
-        set_value(self._data, "humidity", msg, "humidity")
+        set_if_present(self._collector_tmp, "humidity", msg)
+        set_if_present(self._collector_tmp, "temperature", msg)
+
 

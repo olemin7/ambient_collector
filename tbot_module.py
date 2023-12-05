@@ -64,14 +64,19 @@ class TBot:
         if self.__config_updated_cb:
             self.__config_updated_cb(self.__config)
 
+    def is_enabled(self):
+        return ("enable" in self.__config) and self.__config["enable"]
 
     async def start(self,config):
+        log.info(f'config={config}')
         self.__config=config
+        if not self.is_enabled():
+            log.info("Disabled")
+            return
         if not 'subscribers' in self.__config:
             self.__config['subscribers']=set()
 
         self.__tbot=AsyncTeleBot(self.__config["token"])
-        log.info(f'config={self.__config}')
         await self.__tbot.delete_my_commands()
         menu_commands=[]
         for cmd,data in self.__cmds.items():
@@ -87,6 +92,9 @@ class TBot:
         await self.__tbot.polling(none_stop=True)
 
     async def send_notice(self, notice:str):
+        if not self.is_enabled():
+            log.info("Disabled")
+            return
         log.debug(f'send_notice={notice}, subscribers={self.__config["subscribers"]}')
         for id in self.__config['subscribers']:
             await self.__tbot.send_message(id, notice)
@@ -102,6 +110,9 @@ class TBot:
 
 
 def tbot_send_https_notice(config:dict,text:str):
+    if not config["enable"]:
+        log.info("Disabled")
+        return
     log.info(f"send notice={text}, to={config['subscribers']}" )
     url = f"https://api.telegram.org/bot{config['token']}/sendMessage"
     for id in config['subscribers']:

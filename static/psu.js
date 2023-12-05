@@ -1,27 +1,7 @@
-function populate_graph(plots,values){
-    plots.x=[]
-    plots.y=[]
-    if(values && values.length){
-        var last=values[0];
-        values.forEach((element) => {
-            plots.x.push(ts_to_date(element.ts))
-            plots.y.push(last)
-            plots.x.push(ts_to_date(element.ts))
-            plots.y.push(element.value)
-            last=element.value
-        })
-        plots.x.push(ts_to_date((new Date()).getTime()/1000))
-        plots.y.push(last)
-    }
-}
-
 function history(vals){
     var historyDiv = document.getElementById('psu_history');
     var graphConfig = { displayModeBar: false, responsive: true,};
     var layout = {
-      title: {
-        text: name,
-      },
       font: {
         size: 14,
         color: "#7f7f7f",
@@ -37,16 +17,35 @@ function history(vals){
       showlegend:false,
     };
 
-    var data_V220={mode:'lines'}
-    populate_graph(data_V220,vals)
+    var data={
+        mode:'lines',
+        line: {shape: 'vh'},
+        type: 'scatter'
+    }
 
-    Plotly.newPlot( historyDiv,  [data_V220],  layout,  graphConfig);
+    data.x=[]
+    data.y=[]
+    last_state=null;
+    vals.forEach((row) => {
+        if("state" in row){
+            last_state=row.state
+            data.x.push(ts_to_date(row.ts))
+            data.y.push(row.state)
+        }
+    })
+    if(last_state!=null){
+        data.x.push(ts_to_date((new Date()).getTime()/1000))
+        data.y.push(last_state)
+    }
+
+    Plotly.newPlot( historyDiv,  [data],  layout,  graphConfig);
 }
 
 function update_thing(thing) {
      if(thing.masks.indexOf("power220")!=-1){
-        if(!isElementEmpty(thing.state))
-            $("#V220").html(getLastElement(thing.state).value?" норма":" відсутня")
-            history(thing.state)
+        collector=thing.collector
+        state=getLastVal(collector,"state")
+        $("#V220").html((state==null)?"null":(state ?" норма":" відсутня"))
+        history(collector)
      }
  }

@@ -1,20 +1,21 @@
-function isElementEmpty(vals) {
-    if(vals && vals.length){
-        return false
-    }else{
-        return true
+
+function getLastElement(vals,field) {
+    pos=vals.length
+    while(pos--){
+        row=vals[pos]
+        if( field in row){
+            return row
+        }
     }
+    return null
 }
 
-function getLastElement(vals) {
-    return vals[vals.length-1]
-}
-
-function getLastVal(vals) {
-    if(isElementEmpty(vals)){
-        return 0
+function getLastVal(vals,field) {
+    row =getLastElement(vals,field)
+    if (row){
+       return row[field]
     }
-    return getLastElement(vals).value
+    return null
 }
 
 function ts_to_date(ts){
@@ -38,6 +39,20 @@ function ts_to_passed(ts){
             return parseInt(passed/60/60)+"г"
         }
         return dateFormat(event_date,"isoDateTime")
+}
+
+function to_str_temperature(temperature){
+    if(temperature==null){
+        return 'null'
+    }
+    return temperature.toFixed(1) + "&degC"
+}
+
+function to_str_humidity(humidity){
+    if(humidity==null){
+        return 'null'
+    }
+    return humidity.toFixed(1) + "%"
 }
 
 /*

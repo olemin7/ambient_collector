@@ -1,15 +1,20 @@
 
 import time
 import logging
-from thing import CThing, CObserver
-from collector import add_record, get_latest_record, ts_to_str
+from thing import CCollectorThing, CObserver
+from collector import collector
 from typing import Callable
 
 log= logging.getLogger('logger')
-class CAliveTracker(CThing):
-    def __init__(self, name, masks:set):
-        super().__init__(name, masks)
+class CAliveTracker(CCollectorThing):
+    def __init__(self, name, masks:set, config:dict):
+        super().__init__(name,config["persistance_dir"])
+        self.add_masks(masks)
         self.__on_change = CObserver()
+        self._collector.add_field( {"state"})
+        self._collector.set_period(7 * 24)
+        self._collector.finalise()
+        self.__curs_state=None
 
     def update(self, data):
         if "period" not in self._data:
@@ -22,10 +27,11 @@ class CAliveTracker(CThing):
     def _set_state(self, state:int):
         if state:
             self._data["timeout"] = int(time.time()+self._data["period"]*3/2)
-        curs_state =get_latest_record(self._data,"state")
-        if not curs_state or curs_state["value"] != state:
+
+        if not self.__curs_state or self.__curs_state != state:
             log.info(f"new state = {state}")
-            add_record(self._data, "state", state, 7 * 24 * 60 * 60)
+            self.__curs_state=state
+            self._collector_tmp={"state":state}
             self.__on_change.call(self.get_data())
             if 0 == state:
                 self._data.pop("period")
@@ -38,5 +44,6 @@ class CAliveTracker(CThing):
 
     def on_change(self,cb:Callable):
         self.__on_change.subscribe(cb)
+
 
 

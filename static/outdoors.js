@@ -1,6 +1,6 @@
 var graphConfig = { displayModeBar: false,staticPlot: true};
 
-function history_comparation(div_name, name, vals){
+function history_temperature_comparation(div_name, vals){
     var temperatureHistoryDiv = document.getElementById(div_name);
 
     var d_start = new Date();
@@ -17,7 +17,7 @@ function history_comparation(div_name, name, vals){
       margin: { t: 30, b: 20, l: 30, r: 20, pad: 0 },
       yaxis: {
         title: {
-            text: name,
+            text: "Температура",
         },
         autorange: true,
       },
@@ -25,34 +25,50 @@ function history_comparation(div_name, name, vals){
         autorange: false,
         range:[d_start,d_end]
       },
-      showlegend:false,
+      showlegend:true,
+      legend: {
+        x: 1,
+        xanchor: 'right',
+        y: 1
+      },
     };
 
     var date= new Date()
     const today = date.getDate();
-    var data_today={mode:'lines+markers', name: 'today'}
+    var data_today={
+        mode:'lines+markers',
+        name:'сьогодні'
+    }
     date.setDate(date.getDate() - 1)
     const yesterday = date.getDate();
     data_today.x=[]
     data_today.y=[]
-    var data_yesterday={mode:"lines", name: 'yesterday'}
+    var data_yesterday={
+        mode:"lines",
+        name: 'вчора',
+        line: {
+            dash: 'dot',
+        }
+    }
     data_yesterday.x=[]
     data_yesterday.y=[]
     vals.forEach((element) => {
-        var day=(new Date(element.ts*1000)).getDate()
-        console.log(day)
-        if(day==today){
-            data_today.x.push(ts_to_date(element.ts))
-            data_today.y.push(element.value)
-        }else if(day==yesterday){
-            data_yesterday.x.push(ts_to_date(element.ts+24*60*60))
-            data_yesterday.y.push(element.value)
+        if ("temperature" in element){
+            var day=(new Date(element.ts*1000)).getDate()
+            console.log(day)
+            if(day==today){
+                data_today.x.push(ts_to_date(element.ts))
+                data_today.y.push(element.temperature)
+            }else if(day==yesterday){
+                data_yesterday.x.push(ts_to_date(element.ts+24*60*60))
+                data_yesterday.y.push(element.temperature)
+            }
         }
     });
     Plotly.newPlot( temperatureHistoryDiv,  [data_today, data_yesterday],  temperatureLayout,  graphConfig);
 }
 
-function history_double(div_name, name, vals, name2, vals2){
+function history_wide(div_name,  vals){
     var layout = {
       font: {
         size: 14,
@@ -63,13 +79,13 @@ function history_double(div_name, name, vals, name2, vals2){
       yaxis: {
         autorange: true,
         title: {
-            text: name,
+            text: "Температура",
         },
       },
-    yaxis2: {
+      yaxis2: {
         autorange: true,
         title: {
-            text: name2,
+            text: "Тиск",
         },
         overlaying: 'y',
         side: 'right'
@@ -85,46 +101,46 @@ function history_double(div_name, name, vals, name2, vals2){
       },
     };
 
-    var data={mode:'lines' , name: name,}
-    data.x=[]
-    data.y=[]
-    vals.forEach((element) => {
-        data.x.push(ts_to_date(element.ts))
-        data.y.push(element.value)
-    });
+    var temperature={mode:'lines' , name: "Температура",}
+    temperature.x=[]
+    temperature.y=[]
+    var pressure={mode:'lines' ,name: "Тиск", yaxis: 'y2',}
+    pressure.x=[]
+    pressure.y=[]
 
-    var data2={mode:'lines' ,name: name2, yaxis: 'y2',}
-    data2.x=[]
-    data2.y=[]
-    vals2.forEach((element) => {
-        data2.x.push(ts_to_date(element.ts))
-        data2.y.push(element.value)
+    vals.forEach((row) => {
+        if("temperature" in row){
+            temperature.x.push(ts_to_date(row.ts))
+            temperature.y.push(row.temperature)
+        }
+        if("pressure" in row){
+            pressure.x.push(ts_to_date(row.ts))
+            pressure.y.push(row.pressure)
+        }
     });
-
-    console.log(data)
-    Plotly.newPlot( document.getElementById(div_name), [data,data2],  layout,  graphConfig);
+    Plotly.newPlot( document.getElementById(div_name), [temperature,pressure],  layout,  graphConfig);
 }
 
 function update_thing(thing) {
      if(thing.masks.indexOf("weather")!=-1){
-        if(thing.temperature){
-            $("#temperature").html(getLastVal(thing.temperature).toFixed(1) + " C")
-            history_comparation("temperature_cmp","Temperature",thing.temperature)
+        collector=thing.collector
+        $("#temperature").html(to_str_temperature(getLastVal(collector,"temperature")))
+        $("#humidity").html(to_str_humidity(getLastVal(collector,"humidity")))
+
+        pressure=getLastVal(collector,"pressure")
+        if (pressure!=null){
+            $("#pressure").html(pressure.toFixed(0) + " mPa")
         }
-        if(thing.humidity){
-            $("#humidity").html(getLastVal(thing.humidity).toFixed(1) + " %")
+        ambient_light=getLastVal(collector,"ambient_light")
+        if(ambient_light){
+            $("#ambient_light").html(ambient_light.toFixed(0) + " Lux")
         }
-        if(thing.pressure){
-            $("#pressure").html(getLastVal(thing.pressure).toFixed(0) + " mPa")
+        battery=getLastVal(collector,"battery")
+        if(battery){
+            $("#battery").html(battery.toFixed(0)+" %" )
         }
-        if(thing.ambient_light){
-            $("#ambient_light").html(getLastVal(thing.ambient_light).toFixed(0) + " Lux")
-        }
-        if(thing.battery){
-            $("#battery").html(getLastVal(thing.battery).toFixed(0)+" %" )
-        }
-        if(thing.temperature && thing.pressure){
-            history_double("history","Temperature",thing.temperature,"Pressure",thing.pressure)
-        }
+        history_temperature_comparation("temperature_cmp",collector)
+        history_wide("history",collector)
+
     }
 }

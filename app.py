@@ -39,12 +39,12 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 event_loop=asyncio.new_event_loop()
 asyncio.set_event_loop(event_loop)
 
-weather=CWeather("Вулиця","sensors/weather",["weather"])
-power220tracker=CAliveTracker("Живлення220",["power220"])
+weather=CWeather("Вулиця","sensors/weather",["weather"],config)
+power220tracker=CAliveTracker("Живлення220",["power220"],config)
 things=[weather,
-        CClock("Батьківська","stat/clock_parent",["room","220powered"]),
-        CClock("Дитяча","stat/clock_children",["room","220powered"]),
-        CClock("Майстерня","stat/clock_workshop",["room","220powered"]),
+        CClock("Батьківська","stat/clock_parent",["room","220powered"],config),
+        CClock("Дитяча","stat/clock_children",["room","220powered"],config),
+        CClock("Майстерня","stat/clock_workshop",["room","220powered"],config),
         power220tracker
     ]
 
@@ -77,14 +77,15 @@ def json_dumps_fround(field):
     return json.dumps(json_round_floats(field))
 
 def on_power220_update(data):
-    curs_state =get_latest_record(data,"state")
-    if curs_state:
-        status =  f"живлення {curs_state['value']}"
+    collector=data["collector"]
+    print(collector)
+    if len(collector) and "state" in collector[-1]:
+        status =  f"живлення {collector[-1]}"
         tbot_send_https_notice(config['telegram'], status)
 
 def socketio_background_thread():
     while True:
-        log.debug("update")
+        log.debug("background_thread")
         power220tracker.refresh()
         socketio.sleep(10)
 

@@ -1,6 +1,7 @@
 import logging
 import time
 from typing import Callable
+from collector import *
 
 log = logging.getLogger('logger')
 
@@ -16,12 +17,12 @@ class CObserver:
             listener(data)
 class CThing:
     object_id=0
-    def __init__(self,name:str, masks:set):
+    def __init__(self,name:str):
         CThing.object_id += 1
         self._data = {}
         self._data["name"]=name
         self._data["id"] = CThing.object_id
-        self._data["masks"] = masks
+        self._data["masks"] = list()
         self.__observer = CObserver()
 
     def _update(self):
@@ -37,10 +38,27 @@ class CThing:
     def get_id(self):
         return self._data["id"]
 
-    def get_masks(self):
-        return  self._data["masks"]
+    def add_masks(self, masks:set):
+        self._data["masks"].extend(masks)
+
+    def get_masks(self,):
+        return self._data["masks"]
 
     def on_update(self, cb:Callable):
         self.__observer.subscribe(cb)
 
+
+class CCollectorThing(CThing):
+    def __init__(self, name:str, path:str):
+        super().__init__(name)
+        self.add_masks({"collector"})
+        self._data["collector"]=[]
+        self._collector_tmp = {}
+        self._collector = collector(os.path.join(path,name+".csv"), self._data["collector"])
+
+    def _update(self):
+        if len(self._collector_tmp):
+            self._collector.add(self._collector_tmp)
+            self._collector_tmp = {}
+        super()._update()
 

@@ -23,15 +23,19 @@ function update_thing(thing) {
      if(thing.topic){
         document.getElementById(`topic_${thing.id}`).innerHTML =thing.topic
      }
-     if(!isElementEmpty(thing.battery)){
-        document.getElementById(`battery_${thing.id}`).innerHTML =getLastElement(thing.battery).value+"%"
-     }
      if(thing.updated){
         ts_map.set(thing.id, thing.updated);
         refresh_ts()
      }
      if(thing.upd_period){
-        misk+=" upd_period="+thing.upd_period+"c"
+        misk+=`період=${thing.upd_period}с`
+     }
+     battery=getLastVal(thing.collector,"battery")
+     if(battery!=null){
+         if (misk.length){
+            misk+=", "
+         }
+         misk+=`батарея=${battery}%`
      }
      document.getElementById(`misk_${thing.id}`).innerHTML =misk
 }
