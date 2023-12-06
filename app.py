@@ -50,11 +50,13 @@ things=[weather,
 
 @tBot.set_get_status_fn
 def status():
-    log.debug(f"weather={weather.get_data()}")
-    status ="Вулиця"
-    status += "\n"+get_value_ts(weather.get_data(),'temperature')
-    status += "\n"+ get_value_ts(weather.get_data(), 'battery')
-    status += "220 "+ get_value_ts(power220tracker.get_data(),'state')
+    cur_weather=getLastElement(weather.get_data()["collector"],'temperature')
+    log.debug(f"weather={cur_weather}")
+    status =""
+    if(cur_weather):
+        status +=f"Вулиця ={round(cur_weather['temperature'],1)}ºC"
+    if "state" in power220tracker.get_data():
+        status += f"\nмережа {power220tracker.get_data()['state']}"
     log.info(f"send status={status}")
     return status
 
@@ -77,10 +79,9 @@ def json_dumps_fround(field):
     return json.dumps(json_round_floats(field))
 
 def on_power220_update(data):
-    collector=data["collector"]
-    print(collector)
-    if len(collector) and "state" in collector[-1]:
-        status =  f"живлення {collector[-1]}"
+
+    if "state" in data:
+        status =  f"живлення {data['state']}"
         tbot_send_https_notice(config['telegram'], status)
 
 def socketio_background_thread():

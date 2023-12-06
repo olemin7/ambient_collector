@@ -74,29 +74,19 @@ class collector:
 	def get_data(self):
 		return self._data
 
-
-
-def create_val(val):
-	try:
-		val_=int(val*100)/100
-	except(ValueError,TypeError):
-		val_=val
-	return {'value':val_,'ts':int(time.time())}
-
-def set_value(to_dict,to_field,from_dict,from_field):
-	if from_field in from_dict:
-		to_dict[to_field]=[create_val(from_dict[from_field])]
-		pass
-	pass
-
 def set_if_present4(to_dict:dict, to_field:str, from_dict:dict, from_field:str):
 	if from_field in from_dict:
 		to_dict[to_field]=from_dict[from_field]
-		pass
-	pass
 
 def set_if_present(to_dict:dict, to_field:str, from_dict:dict):
 	return set_if_present4(to_dict, to_field, from_dict,to_field)
+
+def getLastElement(vals:list, field:str):
+	for row in reversed(vals):
+		if field in row:
+			return row
+	return  None
+
 
 if __name__ == "__main__":
 	logging.basicConfig(format=' %(levelname)s %(asctime)s:%(filename)s:%(lineno)d: %(message)s', level = logging.DEBUG)
