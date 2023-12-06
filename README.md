@@ -55,5 +55,5 @@ https://plotly.com/javascript/configuration-options/
 
 https://morioh.com/a/96eb0b5d6908/the-easy-way-to-work-with-csv-json-and-xml-in-python
 #todo
-log to DB
+220 separated mqtt post to 220 powered devices
 220 by nearest 2 2 пропущених підняд -= немає живлення

@@ -34,22 +34,23 @@
         <div class="collapse navbar-collapse" id="navbarCollapse">
           <ul class="navbar-nav me-auto mb-2 mb-md-0">
             <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="outdoors">Outdoors</a>
+              <a class= {%- if  request.path in ["/outdoors" ,"/"]  %} "active nav-link" {% else %} "nav-link"{% endif %} aria-current="page" href="outdoors">Вулиця</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="rooms">Rooms</a>
+              <a class={%- if  request.path =="/rooms"  %} "active nav-link" {% else %} "nav-link"{% endif %} aria-current="page" href="rooms" >Кімнати</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="power220">220</a>
+              <a class={%- if  request.path =="/power220"  %} "active nav-link" {% else %} "nav-link"{% endif %} aria-current="page" href="power220">Живлення</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="things">Things</a>
+              <a class={%- if  request.path =="/things"  %} "active nav-link" {% else %} "nav-link"{% endif %} aria-current="page" href="things">Things</a>
             </li>
           </ul>
         </div>
       </div>
     </nav>
   </header>
+  <br>
 {% block content %}
 {% endblock %}
   <footer class="footer mt-auto py-3 bg-dark">

@@ -40,13 +40,14 @@ class collector:
 			with open(self._filename, newline='') as csvfile:
 				reader = csv.DictReader(csvfile, quoting = csv.QUOTE_NONNUMERIC)
 				for row in reader:
-					log.debug(f"row{row}")
+					#log.debug(f"row{row}")
 					self._data.append(row)
 				self.__prune()
 		with open(self._filename, 'w', newline='') as csvfile:
 			writer = csv.DictWriter(csvfile, fieldnames=self._fields, quoting = csv.QUOTE_NONNUMERIC)
 			writer.writeheader()
 			writer.writerows(self._data)
+		log.debug(f"loaded rows={len(self._data)}")
 
 
 	def __prune(self):

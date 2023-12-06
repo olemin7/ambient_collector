@@ -1,45 +1,40 @@
 
 import time
 import logging
-from thing import CCollectorThing, CObserver
-from collector import collector
+from thing import  CObserver
+from mqtt_module import CMQTTThing
 from typing import Callable
 
 log= logging.getLogger('logger')
-class CAliveTracker(CCollectorThing):
-    def __init__(self, name, masks:set, config:dict):
-        super().__init__(name,config["persistance_dir"])
-        self.add_masks(masks)
+class CAliveTracker(CMQTTThing):
+    def __init__(self, name,topic, masks:set, config:dict):
+        super().__init__(name,topic,masks,config)
         self.__on_change = CObserver()
         self._collector.add_field( {"state"})
         self._collector.set_period(7 * 24)
         self._collector.finalise()
-        self.__curs_state=None
+        self._data["timeout"] = int(time.time() + 30)
 
-    def update(self, data):
-        if "period" not in self._data:
-            self._data["period"] = 5*60
+    def on_message(self, data):
         if "upd_period" in data:
-            if self._data["period"]<data["upd_period" ]:
-                self._data["period"]=data["upd_period" ]
-        self._set_state(1)
+            timeout = int(time.time()+data["upd_period"]+5)
+            if ("timeout" not in self._data) or (self._data["timeout"] < timeout):
+                self._data["timeout"] = timeout
+                self._set_state(1)
+        else:
+            log.error(f"no upd_period in data={data}")
 
     def _set_state(self, state:int):
-        if state:
-            self._data["timeout"] = int(time.time()+self._data["period"]*3/2)
-
-        if not self.__curs_state or self.__curs_state != state:
+        if ("state" not in self._data) or self._data["state"] != state:
             log.info(f"new state = {state}")
-            self.__curs_state=state
+            self._data["state"]=state
             self._collector_tmp={"state":state}
             self.__on_change.call(self.get_data())
-            if 0 == state:
-                self._data.pop("period")
-                self._data.pop("timeout")
         self._update()
 
     def refresh(self):
-        if "timeout" in self._data and time.time()>self._data[ "timeout"]:
+        if "timeout" in self._data and time.time()>self._data["timeout"]:
+            self._data.pop("timeout")
             self._set_state(0)
 
     def on_change(self,cb:Callable):

@@ -132,11 +132,11 @@ function update_thing(thing) {
             $("#pressure").html(pressure.toFixed(0) + " mPa")
         }
         ambient_light=getLastVal(collector,"ambient_light")
-        if(ambient_light){
+        if(ambient_light!=null){
             $("#ambient_light").html(ambient_light.toFixed(0) + " Lux")
         }
         battery=getLastVal(collector,"battery")
-        if(battery){
+        if(battery!=null){
             $("#battery").html(battery.toFixed(0)+" %" )
         }
         history_temperature_comparation("temperature_cmp",collector)

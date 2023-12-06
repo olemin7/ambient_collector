@@ -40,11 +40,11 @@ event_loop=asyncio.new_event_loop()
 asyncio.set_event_loop(event_loop)
 
 weather=CWeather("Вулиця","sensors/weather",["weather"],config)
-power220tracker=CAliveTracker("Живлення220",["power220"],config)
+power220tracker=CAliveTracker("Живлення220","stat/power",["power220"],config)
 things=[weather,
-        CClock("Батьківська","stat/clock_parent",["room","220powered"],config),
-        CClock("Дитяча","stat/clock_children",["room","220powered"],config),
-        CClock("Майстерня","stat/clock_workshop",["room","220powered"],config),
+        CClock("Батьківська","stat/clock_parent",["room"],config),
+        CClock("Дитяча","stat/clock_children",["room"],config),
+        CClock("Майстерня","stat/clock_workshop",["room"],config),
         power220tracker
     ]
 
@@ -85,9 +85,9 @@ def on_power220_update(data):
 
 def socketio_background_thread():
     while True:
-        log.debug("background_thread")
+        #log.debug("background_thread")
         power220tracker.refresh()
-        socketio.sleep(10)
+        socketio.sleep(5)
 
 def start():
     mqtt_module.start(config["mqtt"])
@@ -95,8 +95,6 @@ def start():
         el.on_update(lambda data:socketio.emit("thing", data))
         if "mqtt" in el.get_masks():
             mqtt_module.subscribe(el.get_topic(), el.on_message)
-        if("220powered" in el.get_masks()):
-            el.on_update(power220tracker.update)
     power220tracker.on_change(on_power220_update)
     def tbot_thread(loop):
         asyncio.set_event_loop(loop)
