@@ -48,11 +48,29 @@ function to_str_temperature(temperature){
     return temperature.toFixed(1) + "&degC"
 }
 
-function to_str_humidity(humidity){
-    if(humidity==null){
+function to_str_percent(percent, round){
+    if(percent==null){
         return 'null'
     }
-    return humidity.toFixed(1) + "%"
+    return percent.toFixed(round) + "%"
+}
+
+function to_str_humidity(humidity){
+    return to_str_percent(humidity,1)
+}
+
+function to_str_pressure(pressure){
+    if(pressure==null){
+        return 'null'
+    }
+    return pressure.toFixed(0) +" mPa"
+}
+
+function to_str_ambient_light(ambient_light){
+    if(ambient_light==null){
+        return 'null'
+    }
+    return ambient_light.toFixed(0) +" Lux"
 }
 
 /*

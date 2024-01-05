@@ -1,6 +1,6 @@
-var graphConfig = { displayModeBar: false,staticPlot: true};
+var graphConfig = { displayModeBar: false,staticPlot: true , autoscaleYAxis: true};
 
-function history_temperature_comparation(div_name, vals){
+function history_comparation(div_name,  name, vals, field){
     var temperatureHistoryDiv = document.getElementById(div_name);
 
     var d_start = new Date();
@@ -17,7 +17,7 @@ function history_temperature_comparation(div_name, vals){
       margin: { t: 30, b: 20, l: 30, r: 20, pad: 0 },
       yaxis: {
         title: {
-            text: "Температура",
+            text: name,
         },
         autorange: true,
       },
@@ -53,22 +53,22 @@ function history_temperature_comparation(div_name, vals){
     data_yesterday.x=[]
     data_yesterday.y=[]
     vals.forEach((element) => {
-        if ("temperature" in element){
+        if (field in element){
             var day=(new Date(element.ts*1000)).getDate()
             console.log(day)
             if(day==today){
                 data_today.x.push(ts_to_date(element.ts))
-                data_today.y.push(element.temperature)
+                data_today.y.push(element[field])
             }else if(day==yesterday){
                 data_yesterday.x.push(ts_to_date(element.ts+24*60*60))
-                data_yesterday.y.push(element.temperature)
+                data_yesterday.y.push(element[field])
             }
         }
     });
     Plotly.newPlot( temperatureHistoryDiv,  [data_today, data_yesterday],  temperatureLayout,  graphConfig);
 }
 
-function history_wide(div_name,  vals){
+function history(div_name,  name, vals, field){
     var layout = {
       font: {
         size: 14,
@@ -79,46 +79,94 @@ function history_wide(div_name,  vals){
       yaxis: {
         autorange: true,
         title: {
-            text: "Температура",
+            text: name,
         },
       },
-      yaxis2: {
+      xaxis: {
+        autorange: true,
+        rangeselector: {buttons: [
+            {
+              count: 1,
+              label: '1d',
+              step: 'day',
+              stepmode: 'backward'
+            },
+            {
+              count: 7,
+              label: 'week',
+              step: 'day',
+              stepmode: 'backward'
+            },
+            {step: 'all'}
+          ]},
+        type: 'date'
+        },
+      showlegend:false,
+    };
+
+    var data={mode:'lines'}
+    data.x=[]
+    data.y=[]
+
+    vals.forEach((row) => {
+        if(field in row){
+            data.x.push(ts_to_date(row.ts))
+            data.y.push(row[field])
+        }
+    });
+    Plotly.newPlot( document.getElementById(div_name), [data],  layout,  graphConfig);
+}
+
+function light_integration(div_name, vals){
+    const PERIOD=7*24*60*60
+    const now=( new Date()).getTime()/1000
+    var layout = {
+      font: {
+        size: 14,
+        color: "#7f7f7f",
+      },
+      colorway: ['#000000', '#808080'],
+      margin: { t: 30, b: 20, l: 30, r: 20, pad: 0 },
+      yaxis: {
         autorange: true,
         title: {
-            text: "Тиск",
+            text: "Світло",
         },
-        overlaying: 'y',
-        side: 'right'
       },
       xaxis: {
         autorange: true,
       },
-      showlegend:true,
-      legend: {
-        x: 1,
-        xanchor: 'right',
-        y: 1
-      },
+      showlegend:false,
     };
 
-    var temperature={mode:'lines' , name: "Температура",}
-    temperature.x=[]
-    temperature.y=[]
-    var pressure={mode:'lines' ,name: "Тиск", yaxis: 'y2',}
-    pressure.x=[]
-    pressure.y=[]
+    var data_old={mode:'lines' ,
+            line: {
+            dash: 'dot',
+        }}
+    data_old.x=[]
+    data_old.y=[]
+
+    var data_cur={mode:'lines'}
+    data_cur.x=[]
+    data_cur.y=[]
 
     vals.forEach((row) => {
-        if("temperature" in row){
-            temperature.x.push(ts_to_date(row.ts))
-            temperature.y.push(row.temperature)
-        }
-        if("pressure" in row){
-            pressure.x.push(ts_to_date(row.ts))
-            pressure.y.push(row.pressure)
+        if("ambient_light" in row){
+            const elapsed=now-row.ts
+            if(elapsed>2*PERIOD){
+               //ignore
+            }else{
+                data_ref=(elapsed>PERIOD)?data_old:data_cur
+                data_ref.x.push(ts_to_date((elapsed>PERIOD)?row.ts+PERIOD:row.ts))
+                if(data_ref.y.length === 0){
+                   data_ref.y.push(row.ambient_light)
+                }else{
+                   data_ref.y.push(data_ref.y.slice(-1)[0]+row.ambient_light)
+                }
+            }
         }
     });
-    Plotly.newPlot( document.getElementById(div_name), [temperature,pressure],  layout,  graphConfig);
+    Plotly.newPlot( document.getElementById(div_name), [data_old, data_cur],  layout,  graphConfig);
 }
 
 function update_thing(thing) {
@@ -126,21 +174,14 @@ function update_thing(thing) {
         collector=thing.collector
         $("#temperature").html(to_str_temperature(getLastVal(collector,"temperature")))
         $("#humidity").html(to_str_humidity(getLastVal(collector,"humidity")))
+        $("#pressure").html(to_str_pressure(getLastVal(collector,"pressure")))
+        $("#ambient_light").html(to_str_ambient_light(getLastVal(collector,"ambient_light")))
+        $("#battery").html(to_str_percent(getLastVal(collector,"battery"),0))
 
-        pressure=getLastVal(collector,"pressure")
-        if (pressure!=null){
-            $("#pressure").html(pressure.toFixed(0) + " mPa")
-        }
-        ambient_light=getLastVal(collector,"ambient_light")
-        if(ambient_light!=null){
-            $("#ambient_light").html(ambient_light.toFixed(0) + " Lux")
-        }
-        battery=getLastVal(collector,"battery")
-        if(battery!=null){
-            $("#battery").html(battery.toFixed(0)+" %" )
-        }
-        history_temperature_comparation("temperature_cmp",collector)
-        history_wide("history",collector)
-
+        history_comparation("id_h_temperature_cmp", "Температура", collector,"temperature")
+        history_comparation("id_h_light_cmp", "Освітлення", collector,"ambient_light")
+        history("id_h_temperature","Температура", collector,"temperature")
+        history("id_h_presure","Тиск", collector,"pressure")
+        light_integration("id_h_light", collector)
     }
 }

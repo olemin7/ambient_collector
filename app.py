@@ -114,8 +114,13 @@ Serve root index file
 @app.route("/")
 @app.route("/outdoors")
 def outdoors_page():
-    #tbot_send_notice("test tbot_send_notice")
-    return render_template("outdoors.html")
+    summary = [("Температура","temperature"),
+               ("Вологість","humidity"),
+               ("Тиск","pressure"),
+               ("Освітлення","ambient_light"),
+               ("Батарея","battery")]
+    graphs = ["id_h_temperature_cmp","id_h_light_cmp","id_h_temperature","id_h_presure","id_h_light"]
+    return render_template("outdoors.html", summary=summary, graphs=graphs)
 
 @app.route("/rooms")
 def rooms_page():

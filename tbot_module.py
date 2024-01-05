@@ -11,6 +11,7 @@ class TBot:
         self.__cmds={}
         self.__tbot={}
         self.__config={}
+        self.add_command('start', [""], "стан системи", self.__cmd_start)
         self.add_command('status',["menu"],"стан системи",self.__cmd_status)
         self.add_command('help', ["menu"],"допомога", self.__cmd_help)
         self.add_command('subscribe', [""], "підписатись на оновлення", self.__cmd_subscribe)
@@ -34,20 +35,20 @@ class TBot:
             status += "__status_cb is not set"
             pass
         await self.__tbot.send_message(message.chat.id, status)
-        pass
     async def __cmd_help(self,message):
         help="доступні команди:"
         for cmd,data in self.__cmds.items():
             help+=f"\n/{cmd} {data['description']}"
             pass
         await  self.__tbot.send_message(message.chat.id, help)
-        pass
+    async def __cmd_start(self,message):
+        await self.__cmd_status(message)
+        await self.__cmd_help(message)
     async def __cmd_subscribe(self,message):
         if message.from_user.id not in self.__config['subscribers']:
             self.__config['subscribers'].add(message.from_user.id)
             await self.__tbot.send_message(message.from_user.id, "підписані")
             self.__config_update()
-            pass
         else:
             await self.__tbot.send_message(message.from_user.id, "вже підписані")
 
@@ -140,4 +141,3 @@ if __name__ == "__main__":
         config = yaml.load(f, Loader=yaml.FullLoader)
         print('config=', config)
         asyncio.run(tBot.start(config["telegram"]))
-
