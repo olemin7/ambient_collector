@@ -45,6 +45,7 @@ things=[weather,
         CClock("Батьківська","stat/clock_parent",["room"],config),
         CClock("Дитяча","stat/clock_children",["room"],config),
         CClock("Майстерня","stat/clock_workshop",["room"],config),
+        CClock("Коридор","stat/clock_hall",["room"],config),
         power220tracker
     ]
 
