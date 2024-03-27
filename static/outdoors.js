@@ -237,6 +237,7 @@ function update_thing(thing) {
         history_comparation("id_h_light_cmp", "Освітлення", collector,"ambient_light")
         history("id_h_temperature","Температура", collector,"temperature")
         history("id_h_presure","Тиск", collector,"pressure")
-        light_integration("id_h_light", collector)
+        history("id_h_light","Освітлення", collector,"ambient_light")
+   //     light_integration("id_h_light", collector)
     }
 }
