@@ -68,17 +68,19 @@ function history_comparation(div_name,  name, vals, field){
             if(ts>=d_start){
                 data_today.x.push(ts_to_date(element.ts))
                 data_today.y.push(value)
-            }else if(ts>=yesterday){
+            }else{
+                if(ts>=yesterday){
                 data_yesterday.x.push(ts_to_date(element.ts+24*60*60))
                 data_yesterday.y.push(value)
-            }
-            if(ts>=min_max_deep){
-                var hour=ts.getHours()
-                if( !day_max.has(hour) || day_max.get(hour)<value){
-                    day_max.set(hour,value)
                 }
-                if( !day_min.has(hour) || day_min.get(hour)>value){
-                    day_min.set(hour,value)
+                if(ts>=min_max_deep){ // do not include today
+                    var hour=ts.getHours()
+                    if( !day_max.has(hour) || day_max.get(hour)<value){
+                        day_max.set(hour,value)
+                    }
+                    if( !day_min.has(hour) || day_min.get(hour)>value){
+                        day_min.set(hour,value)
+                    }
                 }
             }
         }
