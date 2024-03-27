@@ -3,10 +3,12 @@ var graphConfig = { displayModeBar: false,staticPlot: true , autoscaleYAxis: tru
 function history_comparation(div_name,  name, vals, field){
     var temperatureHistoryDiv = document.getElementById(div_name);
 
-    var d_start = new Date();
-    d_start.setUTCHours(0,0,0,0);
-    var d_end = new Date();
-    d_end.setUTCHours(23,59,59,999);
+    const MIN_MAX_PERIOD_DAYS=7
+    const d_start = (new Date()).setHours(0,0,0,0)
+    const d_end = (new Date()).setHours(23,59,59,999)
+    const yesterday = new Date(d_start - 1000*60*60*24)
+    const min_max_deep= new Date(d_start - MIN_MAX_PERIOD_DAYS*1000*60*60*24)
+    console.log(d_start,yesterday,min_max_deep)
 
     var temperatureLayout = {
       font: {
@@ -33,39 +35,92 @@ function history_comparation(div_name,  name, vals, field){
       },
     };
 
-    var date= new Date()
-    const today = date.getDate();
+
     var data_today={
         mode:'lines+markers',
-        name:'сьогодні'
+        name:'сьогодні',
+        line: {
+            width: 2,
+            color: 'black'
+        },
+        x:[],
+        y:[]
     }
-    date.setDate(date.getDate() - 1)
-    const yesterday = date.getDate();
-    data_today.x=[]
-    data_today.y=[]
+
     var data_yesterday={
         mode:"lines",
         name: 'вчора',
         line: {
             dash: 'dot',
-        }
+            width: 1,
+            color: 'gray'
+        },
+        x:[],
+        y:[]
     }
-    data_yesterday.x=[]
-    data_yesterday.y=[]
+
+    var day_max = new Map();
+    var day_min = new Map();
     vals.forEach((element) => {
         if (field in element){
-            var day=(new Date(element.ts*1000)).getDate()
-            console.log(day)
-            if(day==today){
+            const ts=new Date(element.ts*1000)
+            const value=element[field]
+            if(ts>=d_start){
                 data_today.x.push(ts_to_date(element.ts))
-                data_today.y.push(element[field])
-            }else if(day==yesterday){
+                data_today.y.push(value)
+            }else if(ts>=yesterday){
                 data_yesterday.x.push(ts_to_date(element.ts+24*60*60))
-                data_yesterday.y.push(element[field])
+                data_yesterday.y.push(value)
+            }
+            if(ts>=min_max_deep){
+                var hour=ts.getHours()
+                if( !day_max.has(hour) || day_max.get(hour)<value){
+                    day_max.set(hour,value)
+                }
+                if( !day_min.has(hour) || day_min.get(hour)>value){
+                    day_min.set(hour,value)
+                }
             }
         }
     });
-    Plotly.newPlot( temperatureHistoryDiv,  [data_today, data_yesterday],  temperatureLayout,  graphConfig);
+    var data_max={
+        mode:"lines",
+        name: 'макс '+MIN_MAX_PERIOD_DAYS,
+        line: {
+            shape: 'hv',
+            dash: 'dot',
+            width: 1,
+            color: 'red'
+        },
+        x:[],
+        y:[]
+    }
+    var data_min={
+        mode:"lines",
+        name: 'мін '+MIN_MAX_PERIOD_DAYS,
+        line: {
+            shape: 'hv',
+            dash: 'dot',
+            width: 1,
+            color: 'blue'
+        },
+        x:[],
+        y:[]
+    }
+
+    for (let hour = 0; hour < 24; hour++) {
+        h_ts = dateFormat((new Date(d_start)).setHours(hour,0,0,0),"isoDateTime")
+        if( day_max.has(hour)){
+            data_max.x.push(h_ts)
+            data_max.y.push(day_max.get(hour))
+        }
+        if( day_min.has(hour)){
+            data_min.x.push(h_ts)
+            data_min.y.push(day_min.get(hour))
+        }
+
+    }
+    Plotly.newPlot( temperatureHistoryDiv,  [data_min,data_max,data_yesterday, data_today],  temperatureLayout,  graphConfig);
 }
 
 function history(div_name,  name, vals, field){

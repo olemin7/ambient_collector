@@ -47,8 +47,8 @@ sudo systemctl stop weather_stantion.service
 sudo systemctl enable weather_stantion.service
 journalctl -u weather_stantion.service -f
 
-sshfs olemin@central.local:/home/olemin/ -p 22 ~/mnt
-ssh olemin@central.local
+sshfs olemin@nas.local:/home/olemin/ -p 22 ~/mnt
+ssh olemin@nas.local
 
 https://towardsdatascience.com/how-to-add-on-screen-logging-to-your-flask-application-and-deploy-it-on-aws-elastic-beanstalk-aa55907730f
 https://plotly.com/javascript/configuration-options/
