@@ -269,56 +269,72 @@ function history_min_max(div_name,  name, vals, field){
     Plotly.newPlot( document.getElementById(div_name), [data, data_max, data_min],  layout,  graphConfig);
 }
 
-function light_integration(div_name, vals){
-    const PERIOD=7*24*60*60
-    const now=( new Date()).getTime()/1000
-    var layout = {
-      font: {
+function light_integration(div_name, vals, field){
+     var layout = {
+     title: "Освітлення",
+     font: {
         size: 14,
         color: "#7f7f7f",
-      },
-      colorway: ['#000000', '#808080'],
-      margin: { t: 30, b: 20, l: 30, r: 20, pad: 0 },
-      yaxis: {
+     },
+     colorway: ['#000000', '#808080'],
+     margin: { t: 30, b: 20, l: 30, r: 20, pad: 0 },
+     yaxis: {
         autorange: true,
-        title: {
-            text: "Світло",
+     },
+     yaxis2: {
+        autorange: true,
+        overlaying: 'y',
+     },
+    xaxis: {
+        autorange: true,
+        rangeselector: {buttons: [
+        {
+        count: 7,
+        label: 'week',
+        step: 'day',
+        stepmode: 'backward'
         },
-      },
-      xaxis: {
-        autorange: true,
-      },
-      showlegend:false,
+        {step: 'all'}
+        ]},
+        type: 'date'
+    },
+    showlegend: false,
     };
 
-    var data_old={mode:'lines' ,
-            line: {
-            dash: 'dot',
-        }}
-    data_old.x=[]
-    data_old.y=[]
+    var data={
+        mode:'lines',
+        x:[],
+        y:[],
+        }
 
-    var data_cur={mode:'lines'}
-    data_cur.x=[]
-    data_cur.y=[]
-
+    var day_symm = new Map();
     vals.forEach((row) => {
-        if("ambient_light" in row){
-            const elapsed=now-row.ts
-            if(elapsed>2*PERIOD){
-               //ignore
-            }else{
-                data_ref=(elapsed>PERIOD)?data_old:data_cur
-                data_ref.x.push(ts_to_date((elapsed>PERIOD)?row.ts+PERIOD:row.ts))
-                if(data_ref.y.length === 0){
-                   data_ref.y.push(row.ambient_light)
-                }else{
-                   data_ref.y.push(data_ref.y.slice(-1)[0]+row.ambient_light)
-                }
-            }
+        if(field in row){
+            var ts = ts_to_date(row.ts);
+            var value = row[field]
+            data.x.push(ts)
+            data.y.push(value)
+            var h_ts = dateFormat((new Date(ts)).setHours(12,0,0,0),"isoDateTime")
+            var summ = day_symm.has(h_ts)?day_symm.get(h_ts):0;
+            day_symm.set(h_ts,summ+value)
         }
     });
-    Plotly.newPlot( document.getElementById(div_name), [data_old, data_cur],  layout,  graphConfig);
+
+    var data_symm = {
+        type: 'bar',
+        name: 'макс',
+        opacity: 0.5,
+        x:[],
+        y:[],
+        yaxis: 'y2',
+    }
+
+    day_symm.forEach((value, key) => {
+       data_symm.x.push(key)
+       data_symm.y.push(value)
+    })
+
+    Plotly.newPlot( document.getElementById(div_name), [ data_symm, data],  layout,  graphConfig);
 }
 
 function update_thing(thing) {
@@ -334,7 +350,6 @@ function update_thing(thing) {
         history_comparation("id_h_light_cmp", "Освітлення", collector,"ambient_light")
         history_min_max("id_h_temperature","Температура", collector,"temperature")
         history("id_h_presure","Тиск", collector,"pressure")
-        history("id_h_light","Освітлення", collector,"ambient_light")
-   //     light_integration("id_h_light", collector)
+        light_integration("id_h_light", collector,"ambient_light")
     }
 }
