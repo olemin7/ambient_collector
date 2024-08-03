@@ -122,7 +122,7 @@ function history_comparation(div_name,  name, vals, field){
         }
 
     }
-    Plotly.newPlot( temperatureHistoryDiv,  [data_min,data_max,data_yesterday, data_today],  temperatureLayout,  graphConfig);
+    Plotly.newPlot( temperatureHistoryDiv,  [data_min, data_max, data_yesterday, data_today],  temperatureLayout,  graphConfig);
 }
 
 function history(div_name,  name, vals, field){
@@ -167,11 +167,106 @@ function history(div_name,  name, vals, field){
 
     vals.forEach((row) => {
         if(field in row){
-            data.x.push(ts_to_date(row.ts))
-            data.y.push(row[field])
+            var ts = ts_to_date(row.ts);
+            var val = row[field]
+            data.x.push(ts)
+            data.y.push(val)
         }
     });
     Plotly.newPlot( document.getElementById(div_name), [data],  layout,  graphConfig);
+}
+
+function history_min_max(div_name,  name, vals, field){
+    var layout = {
+      font: {
+        size: 14,
+        color: "#7f7f7f",
+      },
+      colorway: ['#000000', '#808080'],
+      margin: { t: 30, b: 20, l: 30, r: 20, pad: 0 },
+      yaxis: {
+        autorange: true,
+        title: {
+            text: name,
+        },
+      },
+      xaxis: {
+        autorange: true,
+        rangeselector: {buttons: [
+            {
+              count: 7,
+              label: 'week',
+              step: 'day',
+              stepmode: 'backward'
+            },
+            {step: 'all'}
+          ]},
+        type: 'date'
+        },
+      showlegend:false,
+    };
+
+    var data={
+        mode:'lines',
+        line: {dash: 'dot', width: 1}
+        }
+    data.x=[]
+    data.y=[]
+
+    var day_max = new Map();
+    var day_min = new Map();
+
+    vals.forEach((row) => {
+        if(field in row){
+            var ts = ts_to_date(row.ts);
+            var value = parseInt( row[field])
+            data.x.push(ts)
+            data.y.push(value)
+            var h_ts = dateFormat((new Date(ts)).setHours(12,0,0,0),"isoDateTime")
+            if( !day_max.has(h_ts) || day_max.get(h_ts)<value){
+                        day_max.set(h_ts,value)
+            }
+            if( !day_min.has(h_ts) || day_min.get(h_ts)>value){
+                day_min.set(h_ts,value)
+            }
+        }
+    });
+
+    var data_max={
+        mode:"lines+text",
+        name: 'макс',
+        line: {
+            shape: 'hvh',
+            color: 'red'
+        },
+        x:[],
+        y:[],
+        text:[],
+        textposition: 'top',
+    }
+    var data_min={
+        mode:"lines+text",
+        name: 'мін',
+        line: {
+            shape: 'hvh',
+            color: 'blue'
+        },
+        x:[],
+        y:[],
+        text:[],
+        textposition: 'bottom',
+    }
+    day_max.forEach((value, key) => {
+       data_max.x.push(key)
+       data_max.y.push(value)
+       data_max.text.push(value)
+    })
+    day_min.forEach((value, key) => {
+       data_min.x.push(key)
+       data_min.y.push(value)
+       data_min.text.push(value)
+    })
+    Plotly.newPlot( document.getElementById(div_name), [data, data_max, data_min],  layout,  graphConfig);
 }
 
 function light_integration(div_name, vals){
@@ -237,7 +332,7 @@ function update_thing(thing) {
 
         history_comparation("id_h_temperature_cmp", "Температура", collector,"temperature")
         history_comparation("id_h_light_cmp", "Освітлення", collector,"ambient_light")
-        history("id_h_temperature","Температура", collector,"temperature")
+        history_min_max("id_h_temperature","Температура", collector,"temperature")
         history("id_h_presure","Тиск", collector,"pressure")
         history("id_h_light","Освітлення", collector,"ambient_light")
    //     light_integration("id_h_light", collector)
