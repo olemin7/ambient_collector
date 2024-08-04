@@ -125,7 +125,7 @@ function history_comparation(div_name,  name, vals, field){
     Plotly.newPlot( temperatureHistoryDiv,  [data_min, data_max, data_yesterday, data_today],  temperatureLayout,  graphConfig);
 }
 
-function history(div_name,  name, vals, field){
+function history(div_name,  name, vals, field, MIN, MAX){
     var layout = {
       font: {
         size: 14,
@@ -167,10 +167,14 @@ function history(div_name,  name, vals, field){
 
     vals.forEach((row) => {
         if(field in row){
-            var ts = ts_to_date(row.ts);
-            var val = row[field]
-            data.x.push(ts)
-            data.y.push(val)
+            const val = row[field]
+            if(between(val, MIN, MAX)){
+                const ts = ts_to_date(row.ts);
+                data.x.push(ts)
+                data.y.push(val)
+            }else{
+                console.log(val,MIN,MAX)
+            }
         }
     });
     Plotly.newPlot( document.getElementById(div_name), [data],  layout,  graphConfig);
@@ -349,7 +353,7 @@ function update_thing(thing) {
         history_comparation("id_h_temperature_cmp", "Температура", collector,"temperature")
         history_comparation("id_h_light_cmp", "Освітлення", collector,"ambient_light")
         history_min_max("id_h_temperature","Температура", collector,"temperature")
-        history("id_h_presure","Тиск", collector,"pressure")
+        history("id_h_presure","Тиск", collector,"pressure", PRESURE_MIN, PRESURE_MAX)
         light_integration("id_h_light", collector,"ambient_light")
     }
 }

@@ -1,3 +1,9 @@
+const PRESURE_MIN = 700
+const PRESURE_MAX = 1100
+
+function between(x, min, max) {
+  return x >= min && x <= max;
+}
 
 function getLastElement(vals,field) {
     pos=vals.length
