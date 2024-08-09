@@ -345,9 +345,6 @@ function update_thing(thing) {
      if(thing.masks.indexOf("weather")!=-1){
         collector=thing.collector
         $("#temperature").html(to_str_temperature(getLastVal(collector,"temperature")))
-        $("#humidity").html(to_str_humidity(getLastVal(collector,"humidity")))
-        $("#pressure").html(to_str_pressure(getLastVal(collector,"pressure")))
-        $("#ambient_light").html(to_str_ambient_light(getLastVal(collector,"ambient_light")))
         $("#battery").html(to_str_percent(getLastVal(collector,"battery"),0))
 
         history_comparation("id_h_temperature_cmp", "Температура", collector,"temperature")
