@@ -1,0 +1,7 @@
+telegram:
+  enable: False
+  token: 111
+mqtt:
+  server: ""
+  port: 1883
+persistance_dir:  "./persistence"

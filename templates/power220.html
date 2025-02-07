@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block head %}
+  <script type="text/javascript" src="{{ url_for('static', filename = 'plotly-2.24.1.min.js') }}"></script>
+ <script type="text/javascript" src="{{ url_for('static', filename = 'psu.js') }}"></script>
+{% endblock %}
+  {% block content %}
+    <div class="container-fluid content mt-5">
+      <div class="row">
+          <div class="row mt-3 gx-5">
+              <div id="psu_history"></div>
+          </div>
+      </div>
+    </div>
+  {% endblock %}
