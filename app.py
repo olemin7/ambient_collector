@@ -1,12 +1,12 @@
 import json
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO
-from mqtt_module import mqttModule, CWeather, CClock
+from mqtt_module import  CWeather, MQTTAdvertisement, MQTTThings
 from collector import *
 from alive_tracker import *
+import config
 from tbot_module import TBot, tbot_send_https_notice
 from functools import partial
-import yaml
 import asyncio
 import threading
 import logging
@@ -24,14 +24,12 @@ except (ImportError, RuntimeError, AttributeError):
     log.addHandler(journal.JournaldLogHandler())
 
 log.setLevel(logging.DEBUG)
-config = {}
-config_file = "config.yaml"
-with open(config_file, "r") as f:
-    config = yaml.load(f, Loader=yaml.FullLoader)
-    log.info(f"config={config}")
+config = config.get("config/config.yaml")
 
 tBot = TBot()
-mqtt_module = mqttModule()
+# //mqtt_module = mqttModule()
+mqtt_adv= MQTTAdvertisement(config["mqtt"],lambda adv:   log.debug(f"advertisement{adv}"))
+mqtt_things= MQTTThings(config["mqtt"],config["things"],lambda name,val:   log.debug(f"MQTTThings {name}={val}"))
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "asfdwe"
@@ -41,13 +39,14 @@ asyncio.set_event_loop(event_loop)
 
 weather = CWeather("Вулиця", "sensors/weather", ["weather"], config)
 power220tracker = CAliveTracker("Живлення220", "stat/power", ["power220"], config)
-things = [weather,
-          CClock("Батьківська", "stat/clock_parent", ["room"], config),
-          CClock("Дитяча", "stat/clock_children", ["room"], config),
-          CClock("Майстерня", "stat/clock_workshop", ["room"], config),
-          CClock("Коридор", "stat/clock_hall", ["room"], config),
-          power220tracker
-          ]
+things=[]
+# things = [weather,
+#           CClock("Батьківська", "stat/clock_parent", ["room"], config),
+#           CClock("Дитяча", "stat/clock_children", ["room"], config),
+#           CClock("Майстерня", "stat/clock_workshop", ["room"], config),
+#           CClock("Коридор", "stat/clock_hall", ["room"], config),
+#           power220tracker
+#           ]
 
 
 @tBot.set_get_status_fn
@@ -98,12 +97,16 @@ def socketio_background_thread():
 
 
 def start():
-    mqtt_module.start(config["mqtt"])
-    for el in things:
-        el.on_update(lambda data: socketio.emit("thing", data))
-        if "mqtt" in el.get_masks():
-            mqtt_module.sub scribe(el.get_topic(), el.on_message)
-    power220tracker.on_change(on_power220_update)
+    # mqtt_module.start(config["mqtt"],config["things"])
+    # for el in things:
+    #     el.on_update(lambda data: socketio.emit("thing", data))
+    #     if "mqtt" in el.get_masks():
+    #         mqtt_module.subscribe(el.get_topic(), el.on_message)
+    # power220tracker.on_change(on_power220_update)
+
+    # mqtt_module.subscribe("advertisement", el.on_message){
+    #
+    # }
 
     def tbot_thread(loop):
         asyncio.set_event_loop(loop)

@@ -149,7 +149,7 @@ if __name__ == "__main__":
         return "nothing"
 
 
-    with open("config.yaml", "r") as f:
+    with open("config/config.yaml", "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
         print('config=', config)
         asyncio.run(tBot.start(config["telegram"]))

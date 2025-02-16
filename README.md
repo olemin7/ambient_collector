@@ -7,6 +7,7 @@ sudo apt install python3 python3-venv python3-flask python3-pip  libsystemd-dev 
 
 python -m venv .venv
 source .venv/bin/activate
+deactivate
 ```
 3. Install the dependencies
 ```

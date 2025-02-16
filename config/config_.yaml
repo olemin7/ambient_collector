@@ -5,3 +5,4 @@ mqtt:
   server: ""
   port: 1883
 persistance_dir:  "./persistence"
+things:

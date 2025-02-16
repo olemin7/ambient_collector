@@ -1,0 +1,28 @@
+-
+   name: temperature
+   topic: devices/{mac}/temperature
+   retention: 604800 #7*24*60*60
+   type: float2
+-
+   name: humidity
+   topic: devices/{mac}/humidity
+   retention: 604800
+   type: float2
+-
+   name: lighting
+   topic: devices/{mac}/lighting
+   retention: 604800
+   type: int
+-
+   name: adc
+   topic: devices/{mac}/adc
+   retention: 0
+   type: int
+-
+   name: ip
+   topic: devices/{mac}/ip
+   retention: 0
+-
+   name: rssi
+   topic: devices/{mac}/rssi
+   retention: 0
