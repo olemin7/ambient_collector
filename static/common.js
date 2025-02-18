@@ -79,6 +79,16 @@ function to_str_ambient_light(ambient_light){
     return ambient_light.toFixed(0) +" Lux"
 }
 
+function to_str_by_name(name,value){
+    if( name == "temperature"){
+        return to_str_temperature(value)
+    }
+    if( name == "humidity"){
+        return to_str_humidity(value)
+    }
+    return value
+}
+
 /*
   SocketIO Code
 */
@@ -90,11 +100,19 @@ socket.on("thing", function (msg) {
   update_thing(msg);
 });
 
-socket.on("update", function (msg) {
+socket.on("current_data", function (msg) {
+    console.log(msg)
+    for (const thing in msg) {
+        for (const val in msg[thing]) {
+            update_value(`${thing}.${val}`,msg[thing][val])
+    }
+}
+
+
+
+});
+
+socket.on("event", function (msg) {
   console.log(msg)
-  if (msg.things){
-      msg.things.forEach((val) => {
-        update_thing(val);
-    })
-  }
+  update_value(msg.name,msg.value)
 });

@@ -8,3 +8,11 @@ function update_thing(thing) {
         humidityDiv.innerHTML = to_str_humidity(getLastVal(collector,"humidity"))
     }
 }
+
+function update_value(name,value){
+     let div = document.getElementById(name)
+
+     if(div){
+        div.innerHTML = to_str_by_name(name.split(".")[1],value)
+    }
+}

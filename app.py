@@ -2,10 +2,11 @@ import json
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO
 from mqtt_module import MQTTThings,MQTTAdvertisement
-from collector import *
 #from alive_tracker import *
+from datetime import datetime, timezone
 import config
 import map_tree
+import collector
 from tbot_module import TBot, tbot_send_https_notice
 import asyncio
 import threading
@@ -25,8 +26,10 @@ except (ImportError, RuntimeError, AttributeError):
     log.addHandler(journal.JournaldLogHandler())
 
 log.setLevel(logging.DEBUG)
-config = config.get("config/config.yaml")
-
+config_inst = config.get("config/config.yaml")
+collector_inst =collector.COLLECTOR(config_inst)
+mqtt_things= None
+mqtt_advertisement= None
 tBot = TBot()
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "asfdwe"
@@ -34,14 +37,13 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 event_loop = asyncio.new_event_loop()
 asyncio.set_event_loop(event_loop)
 
-def on_thing_event(name:str,event:object):
-    log.debug(f"MQTTThings {name}={event}")
-    current_data.set(name,event)
-    socketio.emit(name, event) #to frontend
-    # add store to DB
+def on_thing_event(name:str,value:object):
+    log.debug(f"MQTTThings {name}={value}")
+    current_data.set(name,value)
+    collector_inst.set(name, value) # store to DB
+    socketio.emit("event",{"name":name, "value":value}) #to frontend
 
-mqtt_things= MQTTThings(config["mqtt"],config["things"],on_thing_event)
-mqtt_advertisement= MQTTAdvertisement(config["mqtt"],on_thing_event)
+
 
 
 
@@ -73,9 +75,9 @@ def status():
 @tBot.set_config_updated_cb
 def config_updated(cfg):
     with open(config_file, 'w') as file:
-        config['telegram'] = cfg
-        yaml.dump(config, file)
-        log.info(f"config_updated={config}")
+        config_inst['telegram'] = cfg
+        yaml.dump(config_inst, file)
+        log.info(f"config_updated={config_inst}")
 
 
 def json_dumps_fround(field):
@@ -94,7 +96,7 @@ def json_dumps_fround(field):
 def on_power220_update(data):
     if "state" in data:
         status = f"живлення {data['state']}"
-        tbot_send_https_notice(config['telegram'], status)
+        tbot_send_https_notice(config_inst['telegram'], status)
 
 
 def socketio_background_thread():
@@ -105,18 +107,23 @@ def socketio_background_thread():
 
 
 def start():
-    # mqtt_module.start(config["mqtt"],config["things"])
+    collector_inst.prune()
+    mqtt_things = MQTTThings(config_inst["mqtt"], config_inst["things"], on_thing_event)
+    mqtt_advertisement = MQTTAdvertisement(config_inst["mqtt"], on_thing_event)
+    for key in collector_inst.get_available_fields():
+        ts,val=collector_inst.get_tail(key)
+     #   current_data.set(key,val)
+        log.info(f"last state [{datetime.fromtimestamp(ts, timezone.utc)}]{key}:{val}")
+
     # for el in things:
     #     el.on_update(lambda data: socketio.emit("thing", data))
     # power220tracker.on_change(on_power220_update)
 
-    # mqtt_module.subscribe("advertisement", el.on_message){
-    #
-    # }
+
 
     def tbot_thread(loop):
         asyncio.set_event_loop(loop)
-        asyncio.run(tBot.start(config["telegram"]))
+        asyncio.run(tBot.start(config_inst["telegram"]))
 
     threading.Thread(target=tbot_thread, name='telebot', args=(event_loop,)).start()
     global thread
@@ -142,9 +149,10 @@ def outdoors_page():
 @app.route("/rooms")
 def rooms_page():
     rooms = []
-    for el in things:
-        if "room" in el.get_masks():
+    for el in config_inst["things"]:
+        if "room" in el["property"]:
             rooms.append(el)
+    log.debug(f"rooms {rooms}")
     return render_template("rooms.html", rooms=rooms)
 
 
@@ -166,10 +174,7 @@ Decorator for connect
 @socketio.on("connect")
 def connect():
     print("Client connected")
-    update = {'things': []}
-    # for el in things:
-    #     update["things"].append(el.get_data())
-    socketio.emit("update", update)
+    socketio.emit("current_data", current_data.get())
 
 
 """

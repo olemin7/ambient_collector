@@ -7,7 +7,7 @@ class MapTree:
         self._separator=separator
         self.tree = {}
 
-    def set(self, key:str, value):
+    def set(self, key:str, value:object):
         keys = key.split(self._separator)
         current = self.tree
         for k in keys[:-1]:
@@ -16,7 +16,7 @@ class MapTree:
             current = current[k]
         current[keys[-1]] = value
 
-    def get(self, key:str=None):
+    def get(self, key:str=None)->object:
         if key is None:
             return self.tree
         keys = key.split(".")
