@@ -1,12 +1,12 @@
 import json
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO
-from mqtt_module import  CWeather, MQTTAdvertisement, MQTTThings
+from mqtt_module import MQTTThings,MQTTAdvertisement
 from collector import *
-from alive_tracker import *
+#from alive_tracker import *
 import config
+import map_tree
 from tbot_module import TBot, tbot_send_https_notice
-from functools import partial
 import asyncio
 import threading
 import logging
@@ -17,6 +17,7 @@ logging.basicConfig(format=' %(levelname)s %(asctime)s:%(filename)s:%(lineno)d: 
 log = logging.getLogger('logger')
 thread = None
 thread_lock = Lock()
+current_data= map_tree.MapTree()
 
 try:
     log.addHandler(journal.JournalHandler())
@@ -27,19 +28,26 @@ log.setLevel(logging.DEBUG)
 config = config.get("config/config.yaml")
 
 tBot = TBot()
-# //mqtt_module = mqttModule()
-mqtt_adv= MQTTAdvertisement(config["mqtt"],lambda adv:   log.debug(f"advertisement{adv}"))
-mqtt_things= MQTTThings(config["mqtt"],config["things"],lambda name,val:   log.debug(f"MQTTThings {name}={val}"))
-
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "asfdwe"
 socketio = SocketIO(app, cors_allowed_origins="*")
 event_loop = asyncio.new_event_loop()
 asyncio.set_event_loop(event_loop)
 
-weather = CWeather("Вулиця", "sensors/weather", ["weather"], config)
-power220tracker = CAliveTracker("Живлення220", "stat/power", ["power220"], config)
-things=[]
+def on_thing_event(name:str,event:object):
+    log.debug(f"MQTTThings {name}={event}")
+    current_data.set(name,event)
+    socketio.emit(name, event) #to frontend
+    # add store to DB
+
+mqtt_things= MQTTThings(config["mqtt"],config["things"],on_thing_event)
+mqtt_advertisement= MQTTAdvertisement(config["mqtt"],on_thing_event)
+
+
+
+# weather = CWeather("Вулиця", "sensors/weather", ["weather"], config)
+# power220tracker = CAliveTracker("Живлення220", "stat/power", ["power220"], config)
+# things=[]
 # things = [weather,
 #           CClock("Батьківська", "stat/clock_parent", ["room"], config),
 #           CClock("Дитяча", "stat/clock_children", ["room"], config),
@@ -51,13 +59,13 @@ things=[]
 
 @tBot.set_get_status_fn
 def status():
-    cur_weather = getLastElement(weather.get_data()["collector"], 'temperature')
-    log.debug(f"weather={cur_weather}")
-    status = ""
-    if (cur_weather):
-        status += f"Вулиця ={round(cur_weather['temperature'], 1)}ºC"
-    if "state" in power220tracker.get_data():
-        status += f"\nмережа {power220tracker.get_data()['state']}"
+    # cur_weather = getLastElement(weather.get_data()["collector"], 'temperature')
+    # log.debug(f"weather={cur_weather}")
+    # status = ""
+    # if (cur_weather):
+    #     status += f"Вулиця ={round(cur_weather['temperature'], 1)}ºC"
+    # if "state" in power220tracker.get_data():
+    #     status += f"\nмережа {power220tracker.get_data()['state']}"
     log.info(f"send status={status}")
     return status
 
@@ -92,7 +100,7 @@ def on_power220_update(data):
 def socketio_background_thread():
     while True:
         # log.debug("background_thread")
-        power220tracker.refresh()
+        # power220tracker.refresh()
         socketio.sleep(5)
 
 
@@ -100,8 +108,6 @@ def start():
     # mqtt_module.start(config["mqtt"],config["things"])
     # for el in things:
     #     el.on_update(lambda data: socketio.emit("thing", data))
-    #     if "mqtt" in el.get_masks():
-    #         mqtt_module.subscribe(el.get_topic(), el.on_message)
     # power220tracker.on_change(on_power220_update)
 
     # mqtt_module.subscribe("advertisement", el.on_message){
@@ -161,8 +167,8 @@ Decorator for connect
 def connect():
     print("Client connected")
     update = {'things': []}
-    for el in things:
-        update["things"].append(el.get_data())
+    # for el in things:
+    #     update["things"].append(el.get_data())
     socketio.emit("update", update)
 
 

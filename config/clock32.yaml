@@ -16,13 +16,10 @@
 -
    name: adc
    topic: devices/{mac}/adc
-   retention: 0
    type: int
 -
    name: ip
    topic: devices/{mac}/ip
-   retention: 0
 -
    name: rssi
    topic: devices/{mac}/rssi
-   retention: 0

@@ -2,17 +2,20 @@
    name: temperature
    topic: stat/{name}
    retention: 604800 #7*24*60*60
-   jsonField: temperature
+   payload_type: json
+   field: temperature
    type: float2
 -
    name: humidity
    topic: stat/{name}
    retention: 604800 #7*24*60*60
-   jsonField: humidity
+   payload_type: json
+   field: humidity
    type: float2
 -
    name: ldr
    topic: stat/{name}
    retention: 604800 #7*24*60*60
-   jsonField: ldr
+   payload_type: json
+   field: ldr
    type: int
