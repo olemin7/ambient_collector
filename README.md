@@ -36,6 +36,8 @@ https://github.com/donskytech/dht22-weather-station-python-flask-socketio-multip
 ### How to auto-start this project when your Raspberry Pi boots or starts?  
 https://www.donskytech.com/raspberry-pi-how-to-start-python-script-on-boot/
 https://plotly.com/javascript/multiple-axes/
+https://github.com/plotly/plotly.js/tree/master/dist
+
 
 
 sudo cp weather_stantion.service /etc/systemd/system/weather_stantion.service
