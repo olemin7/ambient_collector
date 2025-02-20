@@ -163,7 +163,7 @@ def psu_page():
 
 @app.route("/things")
 def things_page():
-    return render_template("things.html", things=things)
+    return render_template("things.html")
 
 
 """

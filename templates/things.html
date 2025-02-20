@@ -1,33 +1,11 @@
 {% extends "layout.html" %}
 {% block head %}
+  <link href="{{url_for('static', filename = 'bootstrap-treeview.min.css')}}" rel="stylesheet"/>
+  <script type="text/javascript" src="{{ url_for('static', filename = 'bootstrap-treeview.min.js') }}" ></script>
   <script type="text/javascript" src="{{ url_for('static', filename = 'things.js') }}" ></script>
 {% endblock %}
 {% block content %}
 <div class="container-fluid content mt-5">
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Name</th>
-          <th scope="col">Topic</th>
-          <th scope="col">ip</th>
-          <th scope="col">rssi</th>
-          <th scope="col">updated</th>
-          <th scope="col">misk</th>
-        </tr>
-      </thead>
-      <tbody>
-        {%for thing in things%}
-        {% set id= thing.get_id() %}
-        <tr>
-          <th>{{thing.get_name()}}</th>
-          <td id="topic_{{id}}"></td>
-          <td id="ip_{{id}}"></td>
-          <td id="rssi_{{id}}"></td>
-          <td id="updated_{{id}}"></td>
-          <td id="misk_{{id}}"></td>
-        </tr>
-        {%endfor%}
-      </tbody>
-    </table>
-  </div>
+  <div id="tree"></div>
+</div>
 {% endblock %}

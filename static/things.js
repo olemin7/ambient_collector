@@ -1,41 +1,38 @@
-ts_map = new Map();
-var refresh_ts_timer=null;
+//https://github.com/jonmiles/bootstrap-treeview
+tree = [];
 
-function refresh_ts(){
-    if(refresh_ts_timer){
-        clearInterval(refresh_ts_timer)
-    }
-    ts_map.forEach((ts, id) => {
-        document.getElementById(`updated_${id}`).innerHTML =ts_to_passed(ts);
-    })
-
-    refresh_ts_timer = setInterval(function() {
-      refresh_ts();
-    }, 1000);
+function add_to_tree(things_tree,name,value){
+    const keys = name.split('.');
+    let nodes = things_tree;
+    let created_new=false
+    let current=undefined;
+    keys.forEach(key=>{
+         current = nodes.find((element) => element.text.startsWith(key));
+         console.log(nodes);
+         if(!current){
+            new_node={"text":key,"nodes":[]}
+            nodes.push(new_node);
+            current=nodes.at(-1);
+            created_new=true;
+         }
+      nodes = current.nodes;
+    });
+   current.text=keys.at(-1)+" : "+value;
+   console.log(value,created_new);
 }
 
 function update_thing(thing) {
-    let misk=""
-     if(thing.wifi){
-        document.getElementById(`ip_${thing.id}`).innerHTML =thing.wifi.ip
-        document.getElementById(`rssi_${thing.id}`).innerHTML =thing.wifi.rssi;
-     }
-     if(thing.topic){
-        document.getElementById(`topic_${thing.id}`).innerHTML =thing.topic
-     }
-     if(thing.updated){
-        ts_map.set(thing.id, thing.updated);
-        refresh_ts()
-     }
-     if(thing.upd_period){
-        misk+=`період=${thing.upd_period}с`
-     }
-     battery=getLastVal(thing.collector,"battery")
-     if(battery!=null){
-         if (misk.length){
-            misk+=", "
-         }
-         misk+=`батарея=${battery}%`
-     }
-     document.getElementById(`misk_${thing.id}`).innerHTML =misk
+
+
+}
+
+function get_tree(){
+    return tree;
+}
+
+function update_value(name,value){
+    add_to_tree(tree,name,value);
+ //   console.log(tree)
+   //console.log(get_tree())
+    $('#tree').treeview({data: get_tree()});
 }

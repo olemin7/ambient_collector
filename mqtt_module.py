@@ -98,4 +98,4 @@ class MQTTAdvertisement(MQTTModule):
 
     def __on_message(self, topic: str, payload: str):
         json_obj = json.loads(payload)
-        self.__on_data_cb_cb(f"{MQTTAdvertisement.TOPIC_ADVERTISEMENT}.{json_obj["mac"]}", json_obj)
+        self.__on_data_cb_cb(f"{MQTTAdvertisement.TOPIC_ADVERTISEMENT}.{json_obj["mac"]}", payload)
