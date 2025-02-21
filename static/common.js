@@ -116,3 +116,6 @@ socket.on("event", function (msg) {
   console.log(msg)
   update_value(msg.name,msg.value)
 });
+
+page_start_up();
+

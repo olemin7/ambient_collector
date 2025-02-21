@@ -16,3 +16,6 @@ function update_value(name,value){
         div.innerHTML = to_str_by_name(name.split(".")[1],value)
     }
 }
+
+function page_start_up(){
+}

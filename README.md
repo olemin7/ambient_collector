@@ -61,3 +61,5 @@ https://morioh.com/a/96eb0b5d6908/the-easy-way-to-work-with-csv-json-and-xml-in-
 220 by nearest 2 2 пропущених підняд -= немає живлення
 
 [TinyDB]
+
+https://siimple.xyz/icons/

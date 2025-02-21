@@ -18,7 +18,6 @@ function add_to_tree(things_tree,name,value){
       nodes = current.nodes;
     });
    current.text=keys.at(-1)+" : "+value;
-   console.log(value,created_new);
 }
 
 function update_thing(thing) {
@@ -26,13 +25,13 @@ function update_thing(thing) {
 
 }
 
-function get_tree(){
-    return tree;
+function update_value(name,value){
+
+    add_to_tree(tree,name,value);
+    $('#tree').treeview({data: tree, expandIcon: 'si-plus', collapseIcon: 'si-minus'});
+
 }
 
-function update_value(name,value){
-    add_to_tree(tree,name,value);
- //   console.log(tree)
-   //console.log(get_tree())
-    $('#tree').treeview({data: get_tree()});
+function page_start_up(){
+
 }
