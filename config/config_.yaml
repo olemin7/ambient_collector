@@ -2,7 +2,43 @@ telegram:
   enable: False
   token: 111
 mqtt:
-  server: ""
+  server: "nas.local"
   port: 1883
-persistance_dir:  "./persistence"
+persistence_dir: "./persistence"
 things:
+  -
+    mac:  64E83387D7D0
+    name: parent
+    file: clock32.yaml
+    property:
+      - room
+  -
+    mac:  64E833885558
+    name: children
+    file: clock32.yaml
+    property:
+      - room
+  -
+    mac:  64E833880880
+    name: test
+    file: clock32.yaml
+    property:
+      - room
+  -
+    name: clock_hall
+    file: clock.yaml
+    property:
+      - room
+      - power
+  -
+    name: outdoor
+    file: outdoor.yaml
+    property:
+      - weather
+      - battery
+  -
+    name: clock_workshop
+    file: clock.yaml
+    property:
+      - room
+      - power

@@ -73,7 +73,8 @@ class MQTTThings(MQTTModule):
                         else:
                             value=payload
                         if value !=None:
-                            value =transformation.to_type(value,parameter["type"])
+                            if "type" in parameter:
+                                value =transformation.to_type(value,parameter["type"])
                             self.__on_data_cb_cb(config.get_parameter_name(thing["name"], parameter), value)
         pass
 
