@@ -238,7 +238,7 @@ function history_min_max(key,  name){
             mode:"lines+text",
             name: 'макс',
             line: {
-                shape: 'hvh',
+                shape: 'hv',
                 color: 'red'
             },
             x:[],
@@ -250,7 +250,7 @@ function history_min_max(key,  name){
             mode:"lines+text",
             name: 'мін',
             line: {
-                shape: 'hvh',
+                shape: 'hv',
                 color: 'blue'
             },
             x:[],
