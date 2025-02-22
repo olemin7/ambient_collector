@@ -11,6 +11,7 @@ from tbot_module import TBot, tbot_send_https_notice
 import asyncio
 import threading
 import logging
+import transformation
 from systemd import journal
 from threading import Lock
 
@@ -120,7 +121,6 @@ def start():
     # power220tracker.on_change(on_power220_update)
 
 
-
     def tbot_thread(loop):
         asyncio.set_event_loop(loop)
         asyncio.run(tBot.start(config_inst["telegram"]))
@@ -135,14 +135,22 @@ def start():
 """
 Serve root index file
 """
-
+@socketio.on("history" )
+def got_cmd(arg):
+    tmp=collector_inst.get_range(arg["key"],arg["begin"] if "begin" in arg else None,arg["end"] if "end" in arg else None)
+    if "transformation" in arg:
+        param=arg["transformation"]
+        param["to_type"]="float2"
+        tmp=transformation.tranformation(tmp,param)
+    log.debug(tmp)
+    return tmp
 
 @app.route("/")
 @app.route("/outdoors")
 def outdoors_page():
-    summary = [("Температура", "temperature"),
+    summary = [("Температура", "parent.temperature"),
                ("Батарея", "battery")]
-    graphs = ["id_h_temperature_cmp", "id_h_light_cmp", "id_h_temperature", "id_h_presure", "id_h_light"]
+    graphs = ["id_comp_outdoor.temperature", "id_comp_outdoor.light", "id_h_outdoor.temperature", "id_h_presure", "id_h_light"]
     return render_template("outdoors.html", summary=summary, graphs=graphs)
 
 

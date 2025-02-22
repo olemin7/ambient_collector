@@ -1,0 +1,28 @@
+-
+   name: temperature
+   topic: stat/{name}
+   retention: 2592000 #30*24*60*60
+   payload_type: json
+   field: temperature
+   type: float2
+-
+   name: pressure
+   topic: stat/{name}
+   retention: 2592000 #30*24*60*60
+   payload_type: json
+   field: pressure
+   type: int
+-
+   name: humidity
+   topic: stat/{name}
+   retention: 604800 #7*24*60*60
+   payload_type: json
+   field: humidity
+   type: float2
+-
+   name: light
+   topic: stat/{name}
+   retention: 2592000 #30*24*60*60
+   payload_type: json
+   field: ldr
+   type: int

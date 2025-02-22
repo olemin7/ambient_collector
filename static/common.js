@@ -94,22 +94,13 @@ function to_str_by_name(name,value){
 */
 var socket = io.connect();
 
-//receive details from server
-socket.on("thing", function (msg) {
-  console.log(msg)
-  update_thing(msg);
-});
-
 socket.on("current_data", function (msg) {
     console.log(msg)
     for (const thing in msg) {
         for (const val in msg[thing]) {
             update_value(`${thing}.${val}`,msg[thing][val])
+        }
     }
-}
-
-
-
 });
 
 socket.on("event", function (msg) {

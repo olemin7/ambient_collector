@@ -63,3 +63,5 @@ https://morioh.com/a/96eb0b5d6908/the-easy-way-to-work-with-csv-json-and-xml-in-
 [TinyDB]
 
 https://siimple.xyz/icons/
+
+https://plotly.com/javascript/plotlyjs-function-reference/

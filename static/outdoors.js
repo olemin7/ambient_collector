@@ -1,14 +1,18 @@
 var graphConfig = { displayModeBar: false,staticPlot: true , autoscaleYAxis: true};
 
-function history_comparation(div_name,  name, vals, field){
-    var temperatureHistoryDiv = document.getElementById(div_name);
-
-    const MIN_MAX_PERIOD_DAYS=7
+function history_comparation(key,  name){
+    function _addTraces(id, data, vals){
+        vals.forEach((element) => {
+            data.x.push(ts_to_date(element.ts))
+            data.y.push(element.value)
+        });
+        Plotly.addTraces( id, [data]);
+    }
     const d_start = (new Date()).setHours(0,0,0,0)
     const d_end = (new Date()).setHours(23,59,59,999)
     const yesterday = new Date(d_start - 1000*60*60*24)
-    const min_max_deep= new Date(d_start - MIN_MAX_PERIOD_DAYS*1000*60*60*24)
-    console.log(d_start,yesterday,min_max_deep)
+    const place_holder_div = document.getElementById("id_comp_"+key);
+    console.log(d_start,yesterday)
 
     var temperatureLayout = {
       font: {
@@ -34,95 +38,96 @@ function history_comparation(div_name,  name, vals, field){
         y: 1
       },
     };
+    Plotly.newPlot( place_holder_div,  [],  temperatureLayout,  graphConfig);
 
-
-    var data_today={
-        mode:'lines+markers',
-        name:'сьогодні',
-        line: {
-            width: 2,
-            color: 'black'
-        },
-        x:[],
-        y:[]
-    }
-
-    var data_yesterday={
-        mode:"lines",
-        name: 'вчора',
-        line: {
-            dash: 'dot',
-            width: 1,
-            color: 'gray'
-        },
-        x:[],
-        y:[]
-    }
-
-    var day_max = new Map();
-    var day_min = new Map();
-    vals.forEach((element) => {
-        if (field in element){
-            const ts=new Date(element.ts*1000)
-            const value=element[field]
-            if(ts>=d_start){
-                data_today.x.push(ts_to_date(element.ts))
-                data_today.y.push(value)
-            }else{
-                if(ts>=yesterday){
-                data_yesterday.x.push(ts_to_date(element.ts+24*60*60))
-                data_yesterday.y.push(value)
-                }
-                if(ts>=min_max_deep){ // do not include today
-                    var hour=ts.getHours()
-                    if( !day_max.has(hour) || day_max.get(hour)<value){
-                        day_max.set(hour,value)
-                    }
-                    if( !day_min.has(hour) || day_min.get(hour)>value){
-                        day_min.set(hour,value)
-                    }
-                }
-            }
+    const d_start_s=parseInt(d_start/1000);
+    socket.emit("history",{key: key,begin:d_start_s}, (response) => {
+        var data_today={
+            mode:'lines+markers',
+            name:'сьогодні',
+            line: {
+                width: 2,
+                color: 'black'
+            },
+            x:[],
+            y:[]
         }
+
+        _addTraces(place_holder_div, data_today, response)
     });
-    var data_max={
-        mode:"lines",
-        name: 'макс '+MIN_MAX_PERIOD_DAYS,
-        line: {
-            shape: 'hv',
-            dash: 'dot',
-            width: 1,
-            color: 'red'
-        },
-        x:[],
-        y:[]
-    }
-    var data_min={
-        mode:"lines",
-        name: 'мін '+MIN_MAX_PERIOD_DAYS,
-        line: {
-            shape: 'hv',
-            dash: 'dot',
-            width: 1,
-            color: 'blue'
-        },
-        x:[],
-        y:[]
-    }
 
-    for (let hour = 0; hour < 24; hour++) {
-        h_ts = dateFormat((new Date(d_start)).setHours(hour,0,0,0),"isoDateTime")
-        if( day_max.has(hour)){
-            data_max.x.push(h_ts)
-            data_max.y.push(day_max.get(hour))
+    socket.emit("history",{key: key,begin:d_start_s-24*60*60,end:d_start_s}, (response) => {
+        var data_yesterday={
+            mode:"lines",
+            name: 'вчора',
+            line: {
+                dash: 'dot',
+                width: 1,
+                color: 'gray'
+            },
+            x:[],
+            y:[]
         }
-        if( day_min.has(hour)){
-            data_min.x.push(h_ts)
-            data_min.y.push(day_min.get(hour))
-        }
+        response.forEach((element) => {
+            element.ts=element.ts+24*60*60
+        });
+        _addTraces(place_holder_div, data_yesterday, response)
+    });
 
-    }
-    Plotly.newPlot( temperatureHistoryDiv,  [data_min, data_max, data_yesterday, data_today],  temperatureLayout,  graphConfig);
+    const min_max_period=d_start_s-7*24*60*60
+    socket.emit("history",{key: key,begin:min_max_period,transformation:{mode:["max","min"]}}, (response) => {
+        response.forEach((element) => {
+            element.ts=d_start_s+(element.ts-min_max_period)%(24*60*60)
+        });
+        var day_max = new Map();
+        var day_min = new Map();
+
+        response.forEach((element) => {
+            if((!day_max.has(element.ts))||(day_max.get(element.ts)<element.max)) {
+                day_max.set(element.ts,element.max)
+            }
+             if((!day_min.has(element.ts))||(day_min.get(element.ts)>element.min)) {
+                day_min.set(element.ts,element.min)
+            }
+        });
+
+        var data_max={
+            mode:"lines",
+            name: 'макс',
+            line: {
+                shape: 'hv',
+                dash: 'dot',
+                width: 1,
+                color: 'red'
+            },
+            x:[],
+            y:[]
+        }
+        let vals=[];
+        [...day_max.keys()].sort().forEach((k)=>{
+            vals.push({"ts":k,"value":day_max.get(k)});
+        });
+        _addTraces(place_holder_div, data_max, vals)
+
+        var data_min={
+            mode:"lines",
+            name: 'мін',
+            line: {
+                shape: 'hv',
+                dash: 'dot',
+                width: 1,
+                color: 'blue'
+            },
+            x:[],
+            y:[]
+        }
+        vals=[];
+        day_min.forEach((v,k)=>{
+            vals.push({"ts":k,"value":v});
+        });
+
+        _addTraces(place_holder_div, data_min, vals)
+    });
 }
 
 function history(div_name,  name, vals, field, MIN, MAX){
@@ -180,7 +185,10 @@ function history(div_name,  name, vals, field, MIN, MAX){
     Plotly.newPlot( document.getElementById(div_name), [data],  layout,  graphConfig);
 }
 
-function history_min_max(div_name,  name, vals, field){
+function history_min_max(key,  name){
+    const place_holder_div = document.getElementById("id_h_"+key);
+
+
     var layout = {
       font: {
         size: 14,
@@ -210,67 +218,81 @@ function history_min_max(div_name,  name, vals, field){
       showlegend:false,
     };
 
-    var data={
-        mode:'lines',
-        line: {dash: 'dot', width: 1}
-        }
-    data.x=[]
-    data.y=[]
+    Plotly.newPlot( place_holder_div, [],  layout,  graphConfig);
 
-    var day_max = new Map();
-    var day_min = new Map();
-
-    vals.forEach((row) => {
-        if(field in row){
-            var ts = ts_to_date(row.ts);
-            var value = parseInt( row[field])
-            data.x.push(ts)
-            data.y.push(value)
-            var h_ts = dateFormat((new Date(ts)).setHours(12,0,0,0),"isoDateTime")
-            if( !day_max.has(h_ts) || day_max.get(h_ts)<value){
-                        day_max.set(h_ts,value)
-            }
-            if( !day_min.has(h_ts) || day_min.get(h_ts)>value){
-                day_min.set(h_ts,value)
-            }
+    socket.emit("history",{key: key,transformation:{mode:["avr"]}}, (response) => {
+        var data={
+            mode:'lines',
+            line: {dash: 'dot', width: 1},
+            x:[],
+            y:[]
         }
+         response.forEach((element) => {
+            data.x.push(ts_to_date(element.ts))
+            data.y.push(element.avr)
+        });
+        Plotly.addTraces( place_holder_div, [data]);
+    });
+    socket.emit("history",{key: key,transformation:{mode:["min","max"],span:24*60*60}}, (response) => {
+        var data_max={
+            mode:"lines+text",
+            name: 'макс',
+            line: {
+                shape: 'hvh',
+                color: 'red'
+            },
+            x:[],
+            y:[],
+            text:[],
+            textposition: 'top',
+        }
+        var data_min={
+            mode:"lines+text",
+            name: 'мін',
+            line: {
+                shape: 'hvh',
+                color: 'blue'
+            },
+            x:[],
+            y:[],
+            text:[],
+            textposition: 'bottom',
+        }
+         response.forEach((element) => {
+            ts=ts_to_date(element.ts)
+            data_max.x.push(ts)
+            data_max.y.push(element.max)
+            data_max.text.push(element.max)
+            data_min.x.push(ts)
+            data_min.y.push(element.min)
+            data_min.text.push(element.min)
+        });
+        Plotly.addTraces( place_holder_div, [data_min,data_max]);
     });
 
-    var data_max={
-        mode:"lines+text",
-        name: 'макс',
-        line: {
-            shape: 'hvh',
-            color: 'red'
-        },
-        x:[],
-        y:[],
-        text:[],
-        textposition: 'top',
-    }
-    var data_min={
-        mode:"lines+text",
-        name: 'мін',
-        line: {
-            shape: 'hvh',
-            color: 'blue'
-        },
-        x:[],
-        y:[],
-        text:[],
-        textposition: 'bottom',
-    }
-    day_max.forEach((value, key) => {
-       data_max.x.push(key)
-       data_max.y.push(value)
-       data_max.text.push(value)
-    })
-    day_min.forEach((value, key) => {
-       data_min.x.push(key)
-       data_min.y.push(value)
-       data_min.text.push(value)
-    })
-    Plotly.newPlot( document.getElementById(div_name), [data, data_max, data_min],  layout,  graphConfig);
+
+
+//    var day_max = new Map();
+//    var day_min = new Map();
+//
+//    vals.forEach((row) => {
+//        if(field in row){
+//            var ts = ts_to_date(row.ts);
+//            var value = parseInt( row[field])
+//            data.x.push(ts)
+//            data.y.push(value)
+//            var h_ts = dateFormat((new Date(ts)).setHours(12,0,0,0),"isoDateTime")
+//            if( !day_max.has(h_ts) || day_max.get(h_ts)<value){
+//                        day_max.set(h_ts,value)
+//            }
+//            if( !day_min.has(h_ts) || day_min.get(h_ts)>value){
+//                day_min.set(h_ts,value)
+//            }
+//        }
+//    });
+
+
+
 }
 
 function light_integration(div_name, vals, field){
@@ -342,15 +364,17 @@ function light_integration(div_name, vals, field){
 }
 
 function update_thing(thing) {
-     if(thing.masks.indexOf("weather")!=-1){
-        collector=thing.collector
-        $("#temperature").html(to_str_temperature(getLastVal(collector,"temperature")))
-        $("#battery").html(to_str_percent(getLastVal(collector,"battery"),0))
+}
 
-        history_comparation("id_h_temperature_cmp", "Температура", collector,"temperature")
-        history_comparation("id_h_light_cmp", "Освітлення", collector,"ambient_light")
-        history_min_max("id_h_temperature","Температура", collector,"temperature")
-        history("id_h_presure","Тиск", collector,"pressure", PRESURE_MIN, PRESURE_MAX)
-        light_integration("id_h_light", collector,"ambient_light")
+function update_value(name,value){
+     let div = document.getElementById(name)
+     if(div){
+        div.innerHTML = to_str_by_name(name.split(".")[1],value)
     }
+}
+
+function page_start_up(){
+    history_comparation("outdoor.temperature", "Температура")
+    history_comparation("outdoor.light", "Освітлення")
+    history_min_max("outdoor.temperature", "Температура")
 }

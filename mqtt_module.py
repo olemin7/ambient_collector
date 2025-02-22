@@ -3,6 +3,7 @@ import json
 import logging
 from collections.abc import Callable
 import config
+import transformation
 
 log = logging.getLogger('logger')
 
@@ -72,13 +73,7 @@ class MQTTThings(MQTTModule):
                         else:
                             value=payload
                         if value !=None:
-                            if "type" in parameter:
-                                data_type=parameter["type"]
-                                if data_type=="float2":
-                                    value=round(float(value),2)
-                                elif data_type == "int":
-                                    value = int(value)
-
+                            value =transformation.to_type(value,parameter["type"])
                             self.__on_data_cb_cb(config.get_parameter_name(thing["name"], parameter), value)
         pass
 
