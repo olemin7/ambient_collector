@@ -148,8 +148,8 @@ def got_cmd(arg):
 @app.route("/")
 @app.route("/outdoors")
 def outdoors_page():
-    summary = [("Температура", "parent.temperature"),
-               ("Батарея", "battery")]
+    summary = [("Температура", "outdoor.temperature"),
+               ("Батарея", "outdoor.battery")]
     graphs = ["id_comp_outdoor.temperature", "id_comp_outdoor.light", "id_h_outdoor.temperature", "id_h_presure", "id_h_light"]
     return render_template("outdoors.html", summary=summary, graphs=graphs)
 

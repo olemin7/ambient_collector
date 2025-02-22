@@ -65,3 +65,6 @@ https://morioh.com/a/96eb0b5d6908/the-easy-way-to-work-with-csv-json-and-xml-in-
 https://siimple.xyz/icons/
 
 https://plotly.com/javascript/plotlyjs-function-reference/
+
+mosquitto_sub -h nas.local -d -t advertisement
+mosquitto_sub -h nas.local -d -t devices/5CCF7FEE8F89/#

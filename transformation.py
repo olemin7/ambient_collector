@@ -6,7 +6,9 @@ log = logging.getLogger('logger')
 
 def to_type(value,data_type):
     if data_type is not None:
-        if data_type == "float2":
+        if data_type == "float1":
+            return round(float(value), 1)
+        elif data_type == "float2":
             return round(float(value), 2)
         elif data_type == "int":
             return int(value)

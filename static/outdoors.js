@@ -75,7 +75,7 @@ function history_comparation(key,  name){
     });
 
     const min_max_period=d_start_s-7*24*60*60
-    socket.emit("history",{key: key,begin:min_max_period,transformation:{mode:["max","min"]}}, (response) => {
+    socket.emit("history",{key: key,begin:min_max_period,end:d_start_s,transformation:{mode:["max","min"]}}, (response) => {
         response.forEach((element) => {
             element.ts=d_start_s+(element.ts-min_max_period)%(24*60*60)
         });
