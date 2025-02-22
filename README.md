@@ -7,6 +7,7 @@ sudo apt install python3 python3-venv python3-flask python3-pip  libsystemd-dev 
 
 python -m venv .venv
 source .venv/bin/activate
+python --version
 deactivate
 ```
 3. Install the dependencies
@@ -46,6 +47,7 @@ sudo systemctl daemon-reload
 sudo systemctl status weather_stantion.service
 sudo systemctl restart weather_stantion.service
 sudo systemctl stop weather_stantion.service
+sudo systemctl start weather_stantion.service
 sudo systemctl enable weather_stantion.service
 journalctl -u weather_stantion.service -f
 

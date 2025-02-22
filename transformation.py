@@ -23,9 +23,10 @@ def tranformation(vals,arg:object)->[{}]:
     spanned={}
     for element in vals:
         ts=int(element["ts"]/span)*span
-        if ts not in spanned:
-            spanned[ts]=[]
-        spanned[ts].append(element["value"])
+        if "value" in element:
+            if ts not in spanned:
+                spanned[ts] = []
+            spanned[ts].append(element["value"])
     out =[]
     for k, v in spanned.items():
         val={"ts":k}
