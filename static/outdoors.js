@@ -130,63 +130,63 @@ function history_comparation(key,  name){
     });
 }
 
-function history(div_name,  name, vals, field, MIN, MAX){
-    var layout = {
-      font: {
-        size: 14,
-        color: "#7f7f7f",
-      },
-      colorway: ['#000000', '#808080'],
-      margin: { t: 30, b: 20, l: 30, r: 20, pad: 0 },
-      yaxis: {
-        autorange: true,
-        title: {
-            text: name,
-        },
-      },
-      xaxis: {
-        autorange: true,
-        rangeselector: {buttons: [
-            {
-              count: 1,
-              label: '1d',
-              step: 'day',
-              stepmode: 'backward'
-            },
-            {
-              count: 7,
-              label: 'week',
-              step: 'day',
-              stepmode: 'backward'
-            },
-            {step: 'all'}
-          ]},
-        type: 'date'
-        },
-      showlegend:false,
-    };
+function history(key,  name, MIN, MAX){
+    const place_holder_div = document.getElementById("id_h_"+key);
+    socket.emit("history",{key: key,transformation:{mode:["avr"],span:30*60}}, (response) => {
+         var layout = {
+              font: {
+                size: 14,
+                color: "#7f7f7f",
+              },
+              colorway: ['#000000', '#808080'],
+              margin: { t: 30, b: 20, l: 30, r: 20, pad: 0 },
+              yaxis: {
+                autorange: true,
+                title: {
+                    text: name,
+                },
+              },
+              xaxis: {
+                autorange: true,
+                rangeselector: {buttons: [
+                    {
+                      count: 1,
+                      label: '1d',
+                      step: 'day',
+                      stepmode: 'backward'
+                    },
+                    {
+                      count: 7,
+                      label: 'week',
+                      step: 'day',
+                      stepmode: 'backward'
+                    },
+                    {step: 'all'}
+                  ]},
+                type: 'date'
+                },
+              showlegend:false,
+            };
 
-    var data={mode:'lines'}
-    data.x=[]
-    data.y=[]
+            var data={mode:'lines'}
+            data.x=[]
+            data.y=[]
 
-    vals.forEach((row) => {
-        if(field in row){
-            const val = row[field]
-            if(between(val, MIN, MAX)){
-                const ts = ts_to_date(row.ts);
-                data.x.push(ts)
-                data.y.push(val)
-            }else{
-                console.log(val,MIN,MAX)
-            }
-        }
+        response.forEach((element) => {
+                if(between(element.avr, MIN, MAX)){
+                    data.x.push(ts_to_date(element.ts))
+                    data.y.push(element.avr)
+                }else{
+                    console.log(element.avr,MIN,MAX)
+                }
+        });
+        Plotly.newPlot( place_holder_div, [data],  layout,  graphConfig);
     });
-    Plotly.newPlot( document.getElementById(div_name), [data],  layout,  graphConfig);
+
 }
 
 function history_min_max(key,  name){
-    const place_holder_div = document.getElementById("id_h_"+key);
+    const place_holder_div = document.getElementById("id_min_max_"+key);
 
 
     var layout = {
@@ -262,37 +262,13 @@ function history_min_max(key,  name){
             ts=ts_to_date(element.ts)
             data_max.x.push(ts)
             data_max.y.push(element.max)
-            data_max.text.push(element.max)
+            data_max.text.push(element.max.toFixed(1))
             data_min.x.push(ts)
             data_min.y.push(element.min)
-            data_min.text.push(element.min)
+            data_min.text.push(element.min.toFixed(1))
         });
         Plotly.addTraces( place_holder_div, [data_min,data_max]);
     });
-
-
-
-//    var day_max = new Map();
-//    var day_min = new Map();
-//
-//    vals.forEach((row) => {
-//        if(field in row){
-//            var ts = ts_to_date(row.ts);
-//            var value = parseInt( row[field])
-//            data.x.push(ts)
-//            data.y.push(value)
-//            var h_ts = dateFormat((new Date(ts)).setHours(12,0,0,0),"isoDateTime")
-//            if( !day_max.has(h_ts) || day_max.get(h_ts)<value){
-//                        day_max.set(h_ts,value)
-//            }
-//            if( !day_min.has(h_ts) || day_min.get(h_ts)>value){
-//                day_min.set(h_ts,value)
-//            }
-//        }
-//    });
-
-
-
 }
 
 function light_integration(div_name, vals, field){
@@ -377,4 +353,5 @@ function page_start_up(){
     history_comparation("outdoor.temperature", "Температура")
     history_comparation("outdoor.light", "Освітлення")
     history_min_max("outdoor.temperature", "Температура")
+    history("outdoor.pressure","Тиск",PRESURE_MIN,PRESURE_MAX)
 }

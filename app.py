@@ -150,7 +150,7 @@ def got_cmd(arg):
 def outdoors_page():
     summary = [("Температура", "outdoor.temperature"),
                ("Батарея", "outdoor.battery")]
-    graphs = ["id_comp_outdoor.temperature", "id_comp_outdoor.light", "id_h_outdoor.temperature", "id_h_presure", "id_h_light"]
+    graphs = ["id_comp_outdoor.temperature", "id_comp_outdoor.light", "id_min_max_outdoor.temperature", "id_h_outdoor.pressure", "id_h_light"]
     return render_template("outdoors.html", summary=summary, graphs=graphs)
 
 

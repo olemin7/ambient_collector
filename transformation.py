@@ -1,7 +1,7 @@
 import logging
-import os
 import pytest
 import statistics as s
+import numbers
 log = logging.getLogger('logger')
 
 def to_type(value,data_type):
@@ -23,7 +23,7 @@ def tranformation(vals,arg:object)->[{}]:
     spanned={}
     for element in vals:
         ts=int(element["ts"]/span)*span
-        if "value" in element:
+        if isinstance(element["value"], numbers.Number):
             if ts not in spanned:
                 spanned[ts] = []
             spanned[ts].append(element["value"])
