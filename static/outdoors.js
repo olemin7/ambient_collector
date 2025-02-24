@@ -130,9 +130,10 @@ function history_comparation(key,  name){
     });
 }
 
-function history(key,  name, MIN, MAX){
+function history(key,  name, begin ,MIN, MAX){
     const place_holder_div = document.getElementById("id_h_"+key);
-    socket.emit("history",{key: key,transformation:{mode:["avr"],span:30*60}}, (response) => {
+    const d_start_s=parseInt((new Date())/1000)-begin;
+    socket.emit("history",{key: key, begin:d_start_s, transformation:{mode:["avr"],span:30*60}}, (response) => {
          var layout = {
               font: {
                 size: 14,
@@ -148,21 +149,6 @@ function history(key,  name, MIN, MAX){
               },
               xaxis: {
                 autorange: true,
-                rangeselector: {buttons: [
-                    {
-                      count: 1,
-                      label: '1d',
-                      step: 'day',
-                      stepmode: 'backward'
-                    },
-                    {
-                      count: 7,
-                      label: 'week',
-                      step: 'day',
-                      stepmode: 'backward'
-                    },
-                    {step: 'all'}
-                  ]},
                 type: 'date'
                 },
               showlegend:false,
@@ -353,5 +339,5 @@ function page_start_up(){
     history_comparation("outdoor.temperature", "Температура")
     history_comparation("outdoor.light", "Освітлення")
     history_min_max("outdoor.temperature", "Температура")
-    history("outdoor.pressure","Тиск",PRESURE_MIN,PRESURE_MAX)
+    history("outdoor.pressure","Тиск",7*24*60*60,PRESURE_MIN,PRESURE_MAX)
 }
