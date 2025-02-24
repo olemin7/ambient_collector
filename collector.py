@@ -60,6 +60,8 @@ class COLLECTOR:
         return int(time.time())
 
     def get_cut_ts(self,key:str)->int:
+        if self.__fields[key]["retention"]==-1:
+            return 0
         return _get_cur_ts() - self.__fields[key]["retention"]
 
     def get_fields(self):
@@ -123,8 +125,10 @@ class COLLECTOR:
 
     def prune(self):
         for k,v in self.get_available_fields().items():
-            log.debug(f"prune {k}, retention {v["retention"]}")
-            prune(self.get_file_name(k),v["retention"])
+            retention=v["retention"]
+            log.debug(f"prune {k}, retention {retention}")
+            if retention!=-1:
+              prune(self.get_file_name(k),retention)
 
 
 
