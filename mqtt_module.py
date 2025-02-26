@@ -74,15 +74,8 @@ class MQTTThings(MQTTModule):
             if "parameters" in thing:
                 for parameter in thing["parameters"]:
                     if topic == parameter["topic"]:
-                        value=None
-                        if "field" in parameter:
-                            json_obj = json.loads(payload) #to do inner json outer.inner....field
-                            field=parameter["field"]
-                            if field in json_obj:
-                                value= json_obj[field]
-                        else:
-                            value=payload
-                        if value !=None:
+                        value=MQTTThings.parse_field(payload,parameter)
+                        if value is not None:
                             if "type" in parameter:
                                 value =transformation.to_type(value,parameter["type"])
                             self.__on_data_cb_cb(config.get_parameter_name(thing["name"], parameter), value)
