@@ -2,44 +2,37 @@
    name: temperature
    topic: devices/{mac}/sensors
    retention: -1 #forever
-   payload_type: json
    field: temperature
    type: float2
 -
    name: pressure
    topic: devices/{mac}/sensors
    retention: 2592000 #30*24*60*60
-   payload_type: json
    field: pressure
    type: int
 -
    name: humidity
    topic: devices/{mac}/sensors
    retention: 604800 #7*24*60*60
-   payload_type: json
    field: humidity
    type: float1
 -
    name: light
    topic: devices/{mac}/sensors
    retention: 2592000 #30*24*60*60
-   payload_type: json
    field: ambient_light
    type: int
 -
    name: battery
    topic: devices/{mac}/sensors
-   payload_type: json
    field: battery
    type: int
 -
    name: rssi
    topic: devices/{mac}/sensors
-   payload_type: json
    field: rssi
    type: int
 -
    name: ip
    topic: devices/{mac}/sensors
-   payload_type: json
    field: ip

@@ -4,6 +4,7 @@ import logging
 from collections.abc import Callable
 import config
 import transformation
+import pytest
 
 log = logging.getLogger('logger')
 
@@ -55,21 +56,30 @@ class MQTTThings(MQTTModule):
                     topics.add(parameter["topic"])
         super().__init__(config_mqtt["server"], config_mqtt["port"], topics, self.__on_message)
 
+    @staticmethod
+    def parse_field(payload:str,parameter:dict)->object:
+        if "field" in parameter:
+            json_obj = json.loads(payload)  # to do inner json outer.inner....field
+            for field in parameter["field"].split('.'):
+                if (type(json_obj) is  dict)and  (field in json_obj):
+                    json_obj=json_obj[field]
+                else:
+                    return None
+            return json_obj
+        else:
+           return payload
+
     def __on_message(self, topic: str, payload: str):
         for thing in self.__things:
             if "parameters" in thing:
                 for parameter in thing["parameters"]:
                     if topic == parameter["topic"]:
                         value=None
-                        if "payload_type" in parameter:
-                            payload_type=parameter["payload_type"]
-                            json_obj = json.loads(payload)
-                            if "field" in parameter:
-                                field=parameter["field"]
-                                if field in json_obj:
-                                    value= json_obj[field]
-                            else:
-                                value=json_obj
+                        if "field" in parameter:
+                            json_obj = json.loads(payload) #to do inner json outer.inner....field
+                            field=parameter["field"]
+                            if field in json_obj:
+                                value= json_obj[field]
                         else:
                             value=payload
                         if value !=None:
@@ -95,3 +105,16 @@ class MQTTAdvertisement(MQTTModule):
     def __on_message(self, topic: str, payload: str):
         json_obj = json.loads(payload)
         self.__on_data_cb_cb(f"{MQTTAdvertisement.TOPIC_ADVERTISEMENT}.{json_obj["mac"]}", payload)
+
+
+
+@pytest.mark.parametrize("payload,parameter,result", [("10", {},"10"),
+                                                      ("10", {'field':"f0"},None),
+                                                      ('{"f0":10}', {'field':"f0"},10),
+                                                      ('{"f0":{"f1":10}}', {'field':"f0.f1"},10),
+                                                      ('{"f0":{"f1":10}}', {'field':"f0.f3"},None),
+                                                        ('{"f0":{"f1":10}}', {'field':"f0.f1.f3"},None),
+                                                      ])
+def test_parse_field(payload,parameter,result):
+    assert MQTTThings.parse_field(payload,parameter)==result
+
