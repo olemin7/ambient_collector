@@ -70,3 +70,5 @@ https://plotly.com/javascript/plotlyjs-function-reference/
 
 mosquitto_sub -h nas.local -d -t advertisement
 mosquitto_sub -h nas.local -d -t devices/5CCF7FEE8F89/#
+
+https://github.com/jonmiles/bootstrap-treeview

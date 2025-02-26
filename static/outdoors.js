@@ -1,6 +1,6 @@
 var graphConfig = { displayModeBar: false,staticPlot: true , autoscaleYAxis: true};
 
-function history_comparation(key,  name){
+function history_comparation(key,  name, mark_max=false){
     function _addTraces(id, data, vals){
         vals.forEach((element) => {
             data.x.push(ts_to_date(element.ts))
@@ -14,7 +14,7 @@ function history_comparation(key,  name){
     const place_holder_div = document.getElementById("id_comp_"+key);
     console.log(d_start,yesterday)
 
-    var temperatureLayout = {
+    var layout = {
       font: {
         size: 14,
         color: "#7f7f7f",
@@ -38,7 +38,7 @@ function history_comparation(key,  name){
         y: 1
       },
     };
-    Plotly.newPlot( place_holder_div,  [],  temperatureLayout,  graphConfig);
+    Plotly.newPlot( place_holder_div,  [],  layout,  graphConfig);
 
     const d_start_s=parseInt(d_start/1000);
     socket.emit("history",{key: key,begin:d_start_s}, (response) => {
@@ -92,7 +92,7 @@ function history_comparation(key,  name){
         });
 
         var data_max={
-            mode:"lines",
+            mode:"lines+text",
             name: 'макс',
             line: {
                 shape: 'hv',
@@ -101,16 +101,13 @@ function history_comparation(key,  name){
                 color: 'red'
             },
             x:[],
-            y:[]
-        }
-        let vals=[];
-        [...day_max.keys()].sort().forEach((k)=>{
-            vals.push({"ts":k,"value":day_max.get(k)});
-        });
-        _addTraces(place_holder_div, data_max, vals)
+            y:[],
+            text:[],
+            textposition: 'top right',
+        };
 
         var data_min={
-            mode:"lines",
+            mode:"lines+text",
             name: 'мін',
             line: {
                 shape: 'hv',
@@ -119,14 +116,32 @@ function history_comparation(key,  name){
                 color: 'blue'
             },
             x:[],
-            y:[]
-        }
-        vals=[];
-        day_min.forEach((v,k)=>{
-            vals.push({"ts":k,"value":v});
+            y:[],
+            text:[],
+            textposition: 'bottom right',
+        };
+
+        const ts_min=[...day_min.entries()].reduce((a, e ) => e[1] < a[1] ? e : a)[0];
+        [...day_min.keys()].sort().forEach((k)=>{
+            data_min.x.push(ts_to_date(k));
+            const val=day_min.get(k);
+            data_min.y.push(val);
+            if(mark_max){
+                data_min.text.push(k==ts_min?val:"");
+            }
         });
 
-        _addTraces(place_holder_div, data_min, vals)
+        const ts_max=[...day_max.entries()].reduce((a, e ) => e[1] > a[1] ? e : a)[0];
+        [...day_max.keys()].sort().forEach((k)=>{
+            data_max.x.push(ts_to_date(k));
+            const val=day_max.get(k);
+            data_max.y.push(val);
+            if(mark_max){
+                data_max.text.push(k==ts_max?val:"");
+            }
+        });
+
+        Plotly.addTraces( place_holder_div, [data_min,data_max]);
     });
 }
 
@@ -190,15 +205,6 @@ function history_min_max(key,  name){
       },
       xaxis: {
         autorange: true,
-        rangeselector: {buttons: [
-            {
-              count: 7,
-              label: 'week',
-              step: 'day',
-              stepmode: 'backward'
-            },
-            {step: 'all'}
-          ]},
         type: 'date'
         },
       showlegend:false,
@@ -230,7 +236,7 @@ function history_min_max(key,  name){
             x:[],
             y:[],
             text:[],
-            textposition: 'top',
+            textposition: 'top right',
         }
         var data_min={
             mode:"lines+text",
@@ -242,7 +248,7 @@ function history_min_max(key,  name){
             x:[],
             y:[],
             text:[],
-            textposition: 'bottom',
+            textposition: 'bottom right',
         }
          response.forEach((element) => {
             ts=ts_to_date(element.ts)
@@ -329,15 +335,15 @@ function update_thing(thing) {
 }
 
 function update_value(name,value){
-     let div = document.getElementById(name)
+     let div = document.getElementById(name);
      if(div){
-        div.innerHTML = to_str_by_name(name.split(".")[1],value)
+        div.innerHTML = to_str_by_name(name.split(".")[1],value);
     }
 }
 
 function page_start_up(){
-    history_comparation("outdoor.temperature", "Температура")
-    history_comparation("outdoor.light", "Освітлення")
-    history_min_max("outdoor.temperature", "Температура")
-    history("outdoor.pressure","Тиск",7*24*60*60,PRESURE_MIN,PRESURE_MAX)
+    history_comparation("outdoor.temperature", "Температура", true);
+    history_comparation("outdoor.light", "Освітлення");
+    history_min_max("outdoor.temperature", "Температура");
+    history("outdoor.pressure", "Тиск", 7*24*60*60, PRESURE_MIN, PRESURE_MAX);
 }
