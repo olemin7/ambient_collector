@@ -121,24 +121,24 @@ function history_comparation(key,  name, mark_max=false){
             textposition: 'bottom right',
         };
 
-        const ts_min=[...day_min.entries()].reduce((a, e ) => e[1] < a[1] ? e : a)[0];
+        var ts_min=-1;
+        var ts_max=-1;
+        if(mark_max){
+            ts_min=[...day_min.entries()].reduce((a, e ) => e[1] < a[1] ? e : a)[0];
+            ts_max=[...day_max.entries()].reduce((a, e ) => e[1] > a[1] ? e : a)[0];
+        }
         [...day_min.keys()].sort().forEach((k)=>{
             data_min.x.push(ts_to_date(k));
             const val=day_min.get(k);
             data_min.y.push(val);
-            if(mark_max){
-                data_min.text.push(k==ts_min?val:"");
-            }
+            data_min.text.push(k==ts_min?val:"");
         });
 
-        const ts_max=[...day_max.entries()].reduce((a, e ) => e[1] > a[1] ? e : a)[0];
         [...day_max.keys()].sort().forEach((k)=>{
             data_max.x.push(ts_to_date(k));
             const val=day_max.get(k);
             data_max.y.push(val);
-            if(mark_max){
-                data_max.text.push(k==ts_max?val:"");
-            }
+            data_max.text.push(k==ts_max?val:"");
         });
 
         Plotly.addTraces( place_holder_div, [data_min,data_max]);
