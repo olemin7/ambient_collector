@@ -47,7 +47,8 @@ function history_comparation(key,  name, mark_max=false){
             name:'сьогодні',
             line: {
                 width: 2,
-                color: 'black'
+                color: 'black',
+                shape: 'spline',
             },
             x:[],
             y:[]
@@ -63,7 +64,8 @@ function history_comparation(key,  name, mark_max=false){
             line: {
                 dash: 'dot',
                 width: 1,
-                color: 'gray'
+                color: 'gray',
+                shape: 'spline',
             },
             x:[],
             y:[]
@@ -169,9 +171,13 @@ function history(key,  name, begin ,MIN, MAX){
               showlegend:false,
             };
 
-            var data={mode:'lines'}
-            data.x=[]
-            data.y=[]
+            var data={
+            mode:'lines',
+            x:[],
+            y:[],
+            line: {shape: 'spline'},
+            }
+
 
         response.forEach((element) => {
                 if(between(element.avr, MIN, MAX)){

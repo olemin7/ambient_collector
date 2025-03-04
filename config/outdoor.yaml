@@ -9,7 +9,7 @@
    topic: devices/{mac}/sensors
    retention: 2592000 #30*24*60*60
    field: pressure
-   type: int
+   type: float1
 -
    name: humidity
    topic: devices/{mac}/sensors
