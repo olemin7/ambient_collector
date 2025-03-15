@@ -86,8 +86,12 @@ class MQTTAdvertisement(MQTTModule):
     TOPIC_CMD = "cmd"
     CMD_ADVERTISEMENT = "adv"
 
-    def __init__(self, config_mqtt: dict, on_data_cb: Callable[[str, object], None]):
+    def __init__(self, config_mqtt: dict, config_things:[], on_data_cb: Callable[[str, object], None]):
         self.__on_data_cb_cb = on_data_cb
+        self.__known_thing_by_mac=dict()
+        for thing in config_things:
+            if "mac" in thing and "name" in thing:
+                self.__known_thing_by_mac[thing["mac"]]=thing["name"]
         super().__init__(config_mqtt["server"], config_mqtt["port"], [MQTTAdvertisement.TOPIC_ADVERTISEMENT], self.__on_message)
 
     def _on_connect(self, client, userdata, flags, rc):
@@ -97,7 +101,10 @@ class MQTTAdvertisement(MQTTModule):
 
     def __on_message(self, topic: str, payload: str):
         json_obj = json.loads(payload)
-        self.__on_data_cb_cb(f"{MQTTAdvertisement.TOPIC_ADVERTISEMENT}.{json_obj["mac"]}", payload)
+        mac=json_obj["mac"]
+        if mac in self.__known_thing_by_mac:
+            json_obj["name"]=self.__known_thing_by_mac[mac]
+        self.__on_data_cb_cb(f"{MQTTAdvertisement.TOPIC_ADVERTISEMENT}.{mac}", repr(json_obj))
 
 
 

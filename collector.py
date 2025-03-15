@@ -17,7 +17,7 @@ def prune(filename:str, retention_period_sec:int):
 
     cut_ts=int(time.time())-retention_period_sec
 
-    pruned_list=[]
+    keeped_list=[]
     fields=None
     with open(filename, newline='') as csvfile:
         reader = csv.DictReader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
@@ -26,16 +26,20 @@ def prune(filename:str, retention_period_sec:int):
             if row["ts"]<cut_ts:
                 need_prune=True
             else:
-                pruned_list.append(row)
+                keeped_list.append(row)
         if not need_prune:
             log.debug(f"nothing to prune")
             return
         fields=reader.fieldnames
+    if len(keeped_list)==0:
+        log.debug(f"delete empty file")
+        os.remove(filename)
+        return
     tempfile=filename+".tmp"
     with open(tempfile, 'w', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fields, quoting=csv.QUOTE_NONNUMERIC)
         writer.writeheader()
-        writer.writerows(pruned_list)
+        writer.writerows(keeped_list)
     os.remove(filename)
     os.rename(tempfile, filename)
 

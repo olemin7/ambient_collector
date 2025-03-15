@@ -110,7 +110,7 @@ def socketio_background_thread():
 def start():
     collector_inst.prune()
     mqtt_things = MQTTThings(config_inst["mqtt"], config_inst["things"], on_thing_event)
-    mqtt_advertisement = MQTTAdvertisement(config_inst["mqtt"], on_thing_event)
+    mqtt_advertisement = MQTTAdvertisement(config_inst["mqtt"], config_inst["things"], on_thing_event)
     for key in collector_inst.get_available_fields():
         ts,val=collector_inst.get_tail(key)
      #   current_data.set(key,val)
