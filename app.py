@@ -113,7 +113,6 @@ def start():
     mqtt_advertisement = MQTTAdvertisement(config_inst["mqtt"], config_inst["things"], on_thing_event)
     for key in collector_inst.get_available_fields():
         ts,val=collector_inst.get_tail(key)
-     #   current_data.set(key,val)
         log.info(f"last state [{datetime.fromtimestamp(ts, timezone.utc)}]{key}:{val}")
 
     # for el in things:

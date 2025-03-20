@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 {% block head %}
-  <link href="{{url_for('static', filename = 'bootstrap-treeview.min.css')}}" rel="stylesheet"/>
-  <script type="text/javascript" src="{{ url_for('static', filename = 'bootstrap-treeview.min.js') }}" ></script>
+  <link rel="stylesheet" href="{{url_for('static', filename = 'jstree/themes/default/style.min.css')}}"/>
+  <script type="text/javascript" src="{{ url_for('static', filename = 'jstree/jstree.min.js') }}" ></script>
   <script type="text/javascript" src="{{ url_for('static', filename = 'things.js') }}" ></script>
 {% endblock %}
 {% block content %}
 <div class="container-fluid content mt-5">
-  <div id="tree"></div>
+  <div id="tree_id"></div>
 </div>
 {% endblock %}

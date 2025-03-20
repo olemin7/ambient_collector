@@ -89,9 +89,13 @@ function to_str_by_name(name,value){
     return value
 }
 
+
+console.log('page_start_up')
+page_start_up();
 /*
   SocketIO Code
 */
+console.log('SocketIO')
 var socket = io.connect();
 
 socket.on("current_data", function (msg) {
@@ -107,6 +111,4 @@ socket.on("event", function (msg) {
   console.log(msg)
   update_value(msg.name,msg.value)
 });
-
-page_start_up();
 
