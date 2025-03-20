@@ -28,13 +28,13 @@ function update_value(name,value){
 }
 
 function page_start_up(){
-$('#tree_id').jstree({ 'core' : {
-    "check_callback": true,
-    "animation" : 0,
-    "plugins" : [ "sort" ],
-} });
-$('#tree_id').on("changed.jstree", function (e, data) {
-  console.log(data.selected);
-});
+    $('#tree_id').jstree({ 'core' : {
+        "check_callback": true,
+        "animation" : 0,
+        "plugins" : [ "sort" ],
+    } });
+    $('#tree_id').on("changed.jstree", function (e, data) {
+      console.log(data.selected);
+    });
 
 }

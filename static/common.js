@@ -90,8 +90,6 @@ function to_str_by_name(name,value){
 }
 
 
-console.log('page_start_up')
-page_start_up();
 /*
   SocketIO Code
 */
@@ -112,3 +110,5 @@ socket.on("event", function (msg) {
   update_value(msg.name,msg.value)
 });
 
+console.log('page_start_up')
+page_start_up();
