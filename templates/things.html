@@ -2,10 +2,14 @@
 {% block head %}
   <link rel="stylesheet" href="{{url_for('static', filename = 'jstree/themes/default/style.min.css')}}"/>
   <script type="text/javascript" src="{{ url_for('static', filename = 'jstree/jstree.min.js') }}" ></script>
+  <script type="text/javascript" src="{{ url_for('static', filename = 'plotly.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename = 'outdoors.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename = 'things.js') }}" ></script>
 {% endblock %}
 {% block content %}
 <div class="container-fluid content mt-5">
   <div id="tree_id"></div>
+  <div class="divider py-1 bg-dark"></div>
+  <div id='id_graphs'></div>
 </div>
 {% endblock %}
