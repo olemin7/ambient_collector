@@ -104,7 +104,7 @@ class MQTTAdvertisement(MQTTModule):
         mac=json_obj["mac"]
         if mac in self.__known_thing_by_mac:
             json_obj["name"]=self.__known_thing_by_mac[mac]
-        self.__on_data_cb_cb(f"{MQTTAdvertisement.TOPIC_ADVERTISEMENT}.{mac}", repr(json_obj))
+        self.__on_data_cb_cb(f"{MQTTAdvertisement.TOPIC_ADVERTISEMENT}.{mac}", json_obj)
 
 
 

@@ -158,9 +158,10 @@ def rooms_page():
     rooms = []
     for el in config_inst["things"]:
         if "room" in el["property"]:
-            rooms.append(el)
+            rooms.append(el["name"])
     log.debug(f"rooms {rooms}")
-    return render_template("rooms.html", rooms=rooms)
+    graphs = ["temperature"]
+    return render_template("rooms.html", rooms=rooms, graphs=graphs)
 
 
 @app.route("/power220")

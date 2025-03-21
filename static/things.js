@@ -24,7 +24,13 @@ function add_to_tree_(name,value){
 
 
 function update_value(name,value){
-    add_to_tree_(name,value);
+    if (typeof value === 'object'){
+        for (const [k, v] of Object.entries(value)) {
+           add_to_tree_(name+"."+k,v);
+        }
+    }else{
+      add_to_tree_(name,value);
+    }
 }
 
 function page_start_up(){

@@ -1,6 +1,12 @@
 {% extends "layout.html" %}
 {% block head %}
+  <script type="text/javascript" src="{{ url_for('static', filename = 'plotly.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename = 'outdoors.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename = 'rooms.js') }}"></script>
+  <script type="text/javascript">
+      const rooms= {{rooms|tojson}};
+      const graphs={{graphs|tojson}};
+  </script>
 {% endblock %}
 {% block content %}
   <div class="container-fluid content mt-5">
@@ -9,15 +15,21 @@
           <div class="col">
             <div class="card">
               <h3 class="card-header">
-                {{room["name"]}}
+                {{room}}
               </h3>
               <div class="card-body">
-                <h4>Температура: <span class="number" id='{{room["name"]}}.temperature'>-</span> </h4>
-                <h4>Вологість: <span class="number" id='{{room["name"]}}.humidity'>-</span> </h4>
+                <h4>Температура: <span class="number" id='{{room}}.temperature'>-</span> </h4>
+                <h4>Вологість: <span class="number" id='{{room}}.humidity'>-</span> </h4>
               </div>
             </div>
           </div>
         {%endfor%}
     </div>
+    {%for item in graphs%}
+      <div class="divider py-1 bg-dark"></div>
+      <div class="row">
+        <div id='id_graph_{{item}}'></div>
+      </div>
+    {%endfor%}
   </div>
 {% endblock %}
