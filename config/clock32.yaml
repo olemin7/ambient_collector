@@ -22,4 +22,5 @@
    topic: devices/{mac}/ip
 -
    name: rssi
+   retention: 604800
    topic: devices/{mac}/rssi

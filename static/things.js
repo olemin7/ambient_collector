@@ -4,14 +4,13 @@ function add_to_tree_(name,value){
 
     if (instance.get_node(name)===false){
       let node_id="";
-      let par_id="#"
+      let par_id="#";
+      let find_missed = false;
       keys.forEach(key=>{
         node_id=node_id+key;
-        node=instance.get_node(node_id);
-        if (node===false){
-            console.log({"par_id":par_id,"id":node_id, "text":key});
-            console.log(instance.create_node(par_id,{id:node_id, text:key}));
-            console.log(instance.last_error());
+        if (find_missed || instance.get_node(node_id)===false){
+            find_missed=true;
+            instance.create_node(par_id,{id:node_id, text:key});
         }
         par_id=node_id;
         node_id=node_id+"."

@@ -114,6 +114,7 @@ def start():
     for key in collector_inst.get_available_fields():
         ts,val=collector_inst.get_tail(key)
         log.info(f"last state [{datetime.fromtimestamp(ts, timezone.utc)}]{key}:{val}")
+        current_data.set(key, val)
 
     # for el in things:
     #     el.on_update(lambda data: socketio.emit("thing", data))

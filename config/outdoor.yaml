@@ -30,6 +30,7 @@
 -
    name: rssi
    topic: devices/{mac}/sensors
+   retention: 604800
    field: rssi
    type: int
 -
