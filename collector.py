@@ -22,11 +22,14 @@ def prune(filename:str, retention_period_sec:int):
     with open(filename, newline='') as csvfile:
         reader = csv.DictReader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
         need_prune = False
-        for row in reader:
-            if row["ts"]<cut_ts:
-                need_prune=True
-            else:
-                keeped_list.append(row)
+        try:
+            for row in reader:
+                if row["ts"]<cut_ts:
+                    need_prune=True
+                else:
+                    keeped_list.append(row)
+        except Exception as e:
+            log.error(e)
         if not need_prune:
             log.debug(f"nothing to prune")
             return
