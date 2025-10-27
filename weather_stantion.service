@@ -4,9 +4,10 @@ After=network.target
 
 [Service]
 User=olemin
-WorkingDirectory=/home/olemin/weather_station_server
-ExecStart=/home/olemin/weather_station_server/.venv/bin/flask --no-debug run --host=0.0.0.0 -p 8088
+WorkingDirectory=/home/olemin/repo/ambient_collector/
+ExecStart=/home/olemin/repo/ambient_collector/.venv/bin/flask --no-debug run --host=0.0.0.0 -p 8088
 Restart=always
+RestartSec=15
 
 [Install]
 WantedBy=multi-user.target
