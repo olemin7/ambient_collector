@@ -81,7 +81,9 @@ class COLLECTOR:
         available={}
         for key,v in self.__fields.items():
             if os.path.isfile(self.get_file_name(key)):
-                available[key]=v
+                ts,value=self.get_tail(key)
+                if ts != None and value != None:
+                    available[key]=v
         return available
 
     def get_file_name(self, key:str)->str:
@@ -127,8 +129,9 @@ class COLLECTOR:
                 last=None
                 for row in reader:
                     last=row   #to do check on old?
-                return int(last["ts"]),last["value"]
-        return None
+                if last:
+                    return int(last["ts"]),last["value"]
+        return None, None
 
     def prune(self):
         for k,v in self.get_available_fields().items():

@@ -46,20 +46,6 @@ def on_thing_event(name:str,value:object):
 
 
 
-
-
-# weather = CWeather("Вулиця", "sensors/weather", ["weather"], config)
-# power220tracker = CAliveTracker("Живлення220", "stat/power", ["power220"], config)
-# things=[]
-# things = [weather,
-#           CClock("Батьківська", "stat/clock_parent", ["room"], config),
-#           CClock("Дитяча", "stat/clock_children", ["room"], config),
-#           CClock("Майстерня", "stat/clock_workshop", ["room"], config),
-#           CClock("Коридор", "stat/clock_hall", ["room"], config),
-#           power220tracker
-#           ]
-
-
 @tBot.set_get_status_fn
 def status():
     # cur_weather = getLastElement(weather.get_data()["collector"], 'temperature')
