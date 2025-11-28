@@ -24,12 +24,13 @@ def prune(filename:str, retention_period_sec:int):
         need_prune = False
         try:
             for row in reader:
-                if row["ts"]<cut_ts:
+                if int(row["ts"])<cut_ts:
                     need_prune=True
                 else:
                     keeped_list.append(row)
         except Exception as e:
             log.error(e)
+            need_prune=True
         if not need_prune:
             log.debug(f"nothing to prune")
             return
@@ -122,13 +123,17 @@ class COLLECTOR:
         return None
 
     def get_tail(self, key: str):
+        log.debug(f"key={key}")
         if key in self.__fields:
             filename = self.get_file_name(key)
             with open(filename, newline='') as csvfile:
                 reader = csv.DictReader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
                 last=None
-                for row in reader:
-                    last=row   #to do check on old?
+                try:
+                    for row in reader:
+                        last=row   #to do check on old?
+                except Exception as e:
+                    log.error(e)
                 if last:
                     return int(last["ts"]),last["value"]
         return None, None

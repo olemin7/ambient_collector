@@ -24,3 +24,4 @@
    name: rssi
    retention: 604800
    topic: devices/{mac}/rssi
+   type: int
