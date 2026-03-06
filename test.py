@@ -2,8 +2,8 @@ import pytest
 
 
 def fun(x):
-    return x*x
+    return x * x
+
 
 def test_fun():
-    assert fun(5)==10
-
+    assert fun(5) == 25

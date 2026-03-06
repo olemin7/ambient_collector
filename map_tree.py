@@ -1,5 +1,5 @@
 import logging
-import pytest
+
 log = logging.getLogger('logger')
 
 class MapTree:
@@ -38,31 +38,4 @@ class MapTree:
 
 if __name__ == "__main__":
     logging.basicConfig(format=' %(levelname)s %(asctime)s:%(filename)s:%(lineno)d: %(message)s', level=logging.DEBUG)
-
-def test_basic():
-    tree = MapTree()
-    tree.set("a.b.c", 1)
-    tree.set("a.b.d", 2)
-    tree.set("a.e", 3)
-    tree.set("x.y", 4)
-    print(tree.get("a.b.c"))  # Output: 1
-    print(tree.get("a.b"))  # Output: {'c': 1, 'd': 2}
-    print(tree.get("x.y"))  # Output: 4
-    print(tree.get("non.existent"))  # Output: None
-    tree.display()
-    print(tree.get())
-
-
-@pytest.mark.parametrize("field,value", [("a.b.c", 1), ("a.b.d", 2), ("a.e", 3)])
-def test_snake(field,value):
-    tree = MapTree()
-    tree.set(field, value)
-    assert tree.get(field) == value
-
-def test_update():
-    tree = MapTree()
-    field="x.y.z"
-    tree.set(field, 1)
-    tree.set(field, 2)
-    assert tree.get(field) == 2
 

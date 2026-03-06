@@ -257,7 +257,7 @@ function history_min_max(key,  name){
             textposition: 'bottom right',
         }
          response.forEach((element) => {
-            ts=ts_to_date(element.ts)
+            let ts=ts_to_date(element.ts)
             data_max.x.push(ts)
             data_max.y.push(element.max)
             data_max.text.push(element.max.toFixed(1))

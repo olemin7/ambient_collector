@@ -9,19 +9,19 @@ python -m venv .venv
 source .venv/bin/activate
 python --version
 deactivate
-```
-3. Install the dependencies
-```
+
+# Install the dependencies
+
 
 pip install -r requirements.txt
 cp config_.yaml config.yaml
-```
 
-4. Run the application
+
+# Run the application
 ```
 flask run --host=0.0.0.0
 ```
-5. Access the application using the following URL
+# Access the application using the following URL
 ```
 http://127.0.0.1:5000/
 ```

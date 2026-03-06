@@ -6,9 +6,9 @@ function between(x, min, max) {
 }
 
 function getLastElement(vals,field) {
-    pos=vals.length
+    let pos=vals.length
     while(pos--){
-        row=vals[pos]
+        let row=vals[pos]
         if( field in row){
             return row
         }

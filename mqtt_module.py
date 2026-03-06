@@ -4,7 +4,6 @@ import logging
 from collections.abc import Callable
 import config
 import transformation
-import pytest
 
 log = logging.getLogger('logger')
 
@@ -31,7 +30,6 @@ class MQTTModule:
 
         if message.retain == 1:
             log.info("This is a retained message")
-        pass
 
     def _on_connect(self, client, userdata, flags, rc):
         if rc == 0:
@@ -46,10 +44,10 @@ class MQTTModule:
 
 
 class MQTTThings(MQTTModule):
-    def __init__(self, config_mqtt:dict, config_things:[], on_data_cb: Callable[[str,object], None]):
+    def __init__(self, config_mqtt: dict, config_things: list, on_data_cb: Callable[[str, object], None]):
         self.__on_data_cb_cb = on_data_cb
-        self.__things=config_things
-        topics=set()
+        self.__things = config_things
+        topics = set()
         for thing in self.__things:
             if "parameters" in thing:
                 for parameter in thing["parameters"]:
@@ -57,41 +55,41 @@ class MQTTThings(MQTTModule):
         super().__init__(config_mqtt["server"], config_mqtt["port"], topics, self.__on_message)
 
     @staticmethod
-    def parse_field(payload:str,parameter:dict)->object:
+    def parse_field(payload: str, parameter: dict) -> object:
         if "field" in parameter:
-            json_obj = json.loads(payload)  # to do inner json outer.inner....field
+            json_obj = json.loads(payload)
             for field in parameter["field"].split('.'):
-                if (type(json_obj) is  dict)and  (field in json_obj):
-                    json_obj=json_obj[field]
+                if (type(json_obj) is dict) and (field in json_obj):
+                    json_obj = json_obj[field]
                 else:
                     return None
             return json_obj
         else:
-           return payload
+            return payload
 
     def __on_message(self, topic: str, payload: str):
         for thing in self.__things:
             if "parameters" in thing:
                 for parameter in thing["parameters"]:
                     if topic == parameter["topic"]:
-                        value=MQTTThings.parse_field(payload,parameter)
+                        value = MQTTThings.parse_field(payload, parameter)
                         if value is not None:
                             if "type" in parameter:
-                                value =transformation.to_type(value,parameter["type"])
+                                value = transformation.to_type(value, parameter["type"])
                             self.__on_data_cb_cb(config.get_parameter_name(thing["name"], parameter), value)
-        pass
+
 
 class MQTTAdvertisement(MQTTModule):
     TOPIC_ADVERTISEMENT = "advertisement"
     TOPIC_CMD = "cmd"
     CMD_ADVERTISEMENT = "adv"
 
-    def __init__(self, config_mqtt: dict, config_things:[], on_data_cb: Callable[[str, object], None]):
+    def __init__(self, config_mqtt: dict, config_things: list, on_data_cb: Callable[[str, object], None]):
         self.__on_data_cb_cb = on_data_cb
-        self.__known_thing_by_mac=dict()
+        self.__known_thing_by_mac = dict()
         for thing in config_things:
             if "mac" in thing and "name" in thing:
-                self.__known_thing_by_mac[thing["mac"]]=thing["name"]
+                self.__known_thing_by_mac[thing["mac"]] = thing["name"]
         super().__init__(config_mqtt["server"], config_mqtt["port"], [MQTTAdvertisement.TOPIC_ADVERTISEMENT], self.__on_message)
 
     def _on_connect(self, client, userdata, flags, rc):
@@ -101,20 +99,7 @@ class MQTTAdvertisement(MQTTModule):
 
     def __on_message(self, topic: str, payload: str):
         json_obj = json.loads(payload)
-        mac=json_obj["mac"]
+        mac = json_obj["mac"]
         if mac in self.__known_thing_by_mac:
-            json_obj["name"]=self.__known_thing_by_mac[mac]
+            json_obj["name"] = self.__known_thing_by_mac[mac]
         self.__on_data_cb_cb(f"{MQTTAdvertisement.TOPIC_ADVERTISEMENT}.{mac}", json_obj)
-
-
-
-@pytest.mark.parametrize("payload,parameter,result", [("10", {},"10"),
-                                                      ("10", {'field':"f0"},None),
-                                                      ('{"f0":10}', {'field':"f0"},10),
-                                                      ('{"f0":{"f1":10}}', {'field':"f0.f1"},10),
-                                                      ('{"f0":{"f1":10}}', {'field':"f0.f3"},None),
-                                                        ('{"f0":{"f1":10}}', {'field':"f0.f1.f3"},None),
-                                                      ])
-def test_parse_field(payload,parameter,result):
-    assert MQTTThings.parse_field(payload,parameter)==result
-

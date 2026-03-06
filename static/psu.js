@@ -28,7 +28,7 @@ function history(thing){
 
     data.x=[]
     data.y=[]
-    last_state=null;
+    let last_state=null;
     thing.collector.forEach((row) => {
         if("state" in row){
             last_state=row.state
