@@ -17,7 +17,7 @@ function getLastElement(vals,field) {
 }
 
 function getLastVal(vals,field) {
-    row =getLastElement(vals,field)
+    let row =getLastElement(vals,field)
     if (row){
        return row[field]
     }
@@ -25,12 +25,12 @@ function getLastVal(vals,field) {
 }
 
 function ts_to_date(ts){
-        date =new Date(ts*1000)
+        let date =new Date(ts*1000)
         return dateFormat(date,"isoDateTime")
 }
 
 function ts_to_passed(ts){
-        event_date =new Date(ts*1000)
+        let event_date =new Date(ts*1000)
         const passed =(Date.now()-event_date)/1000;
         if(5>passed){
             return "щойно"

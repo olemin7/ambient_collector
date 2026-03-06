@@ -58,6 +58,7 @@ def status():
     #     status += f"Вулиця ={round(cur_weather['temperature'], 1)}ºC"
     # if "state" in power220tracker.get_data():
     #     result += f"\nмережа {power220tracker.get_data()['state']}"
+    result = ""
     log.info(f"send status={result}")
     return result
 
