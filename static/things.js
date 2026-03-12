@@ -26,6 +26,14 @@ function update_value(name,value){
         for (const [k, v] of Object.entries(value)) {
            add_to_tree_(name+"."+k,v);
         }
+        if (value.name) {
+            const instance = $('#tree_id').jstree(true);
+            const node = instance.get_node(name);
+            if (node !== false) {
+                const mac = name.split('.').at(-1);
+                instance.rename_node(name, mac + " - " + value.name);
+            }
+        }
     }else{
       add_to_tree_(name,value);
     }
