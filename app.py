@@ -15,6 +15,12 @@ import logging
 import transformation
 from systemd import journal
 from threading import Lock
+import engineio.payload
+
+# The client fires many "history" emits at page load; while still on HTTP
+# long-polling, engine.io batches them into one POST. The default limit of 16
+# packets/payload raises "Too many packets in payload". Raise it for this app.
+engineio.payload.Payload.max_decode_packets = 250
 
 logging.basicConfig(format=' %(levelname)s %(asctime)s:%(filename)s:%(lineno)d: %(message)s', level=logging.DEBUG)
 log = logging.getLogger('logger')
@@ -37,8 +43,6 @@ tBot = TBot()
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-fallback-key")
 socketio = SocketIO(app, cors_allowed_origins="*")
-event_loop = asyncio.new_event_loop()
-asyncio.set_event_loop(event_loop)
 
 def on_thing_event(name:str,value:object):
     log.debug(f"MQTTThings {name}={value}")
@@ -65,10 +69,20 @@ def status():
 
 @tBot.set_config_updated_cb
 def config_updated(cfg):
+    # Persist ONLY the telegram section, preserving the original (unexpanded)
+    # config file structure. Dumping the in-memory config_inst would inline all
+    # the per-thing parameters that were loaded from separate files and clobber
+    # config.yaml. Re-read the raw file and swap just the telegram block.
+    with open(CONFIG_FILE) as file:
+        raw_config = yaml.safe_load(file)
+    telegram_to_save = dict(cfg)
+    subscribers = telegram_to_save.get('subscribers')
+    if isinstance(subscribers, set):
+        telegram_to_save['subscribers'] = sorted(subscribers)
+    raw_config['telegram'] = telegram_to_save
     with open(CONFIG_FILE, 'w') as file:
-        config_inst['telegram'] = cfg
-        yaml.dump(config_inst, file)
-        log.info(f"config_updated={config_inst}")
+        yaml.safe_dump(raw_config, file, sort_keys=False, allow_unicode=True)
+    log.info(f"config_updated telegram={telegram_to_save}")
 
 
 def json_dumps_fround(field):
@@ -98,6 +112,15 @@ def socketio_background_thread():
 
 
 def start():
+    global thread, mqtt_things, mqtt_advertisement
+    # Guard against running more than once per process (e.g. Flask reloader,
+    # repeated imports). Telegram polling in particular must be single-instance.
+    with thread_lock:
+        if thread is not None:
+            log.info("start() already initialized; skipping")
+            return
+        thread = socketio.start_background_task(socketio_background_thread)
+
     collector_inst.prune()
     mqtt_things = MQTTThings(config_inst["mqtt"], config_inst["things"], on_thing_event)
     mqtt_advertisement = MQTTAdvertisement(config_inst["mqtt"], config_inst["things"], on_thing_event)
@@ -106,20 +129,11 @@ def start():
         log.info(f"last state [{datetime.fromtimestamp(ts, timezone.utc)}]{key}:{val}")
         current_data.set(key, val)
 
-    # for el in things:
-    #     el.on_update(lambda data: socketio.emit("thing", data))
-    # power220tracker.on_change(on_power220_update)
-
-
-    def tbot_thread(loop):
-        asyncio.set_event_loop(loop)
+    def tbot_thread():
+        # asyncio.run creates and owns its own event loop for this thread.
         asyncio.run(tBot.start(config_inst["telegram"]))
 
-    threading.Thread(target=tbot_thread, name='telebot', args=(event_loop,)).start()
-    global thread
-    with thread_lock:
-        if thread is None:
-            thread = socketio.start_background_task(socketio_background_thread)
+    threading.Thread(target=tbot_thread, name='telebot', daemon=True).start()
 
 
 @socketio.on("history")

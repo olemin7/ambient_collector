@@ -30,5 +30,12 @@
         <div id='id_graph_{{item}}'></div>
       </div>
     {%endfor%}
+    {%for room in rooms%}
+      <div class="divider py-1 bg-dark"></div>
+      <div class="row">
+        <h4>{{room}}</h4>
+        <div id='id_comp_{{room}}.temperature'></div>
+      </div>
+    {%endfor%}
   </div>
 {% endblock %}

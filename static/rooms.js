@@ -12,7 +12,7 @@ function history(parameter,  rooms){
       yaxis: {
         autorange: true,
         title: {
-            text: name,
+            text: parameter,
         },
       },
       xaxis: {
@@ -27,7 +27,10 @@ function history(parameter,  rooms){
     rooms.forEach((room) => {
         const key=room+"."+parameter;
 
-        socket.emit("history",{key: key, begin:d_start_s}, (response) => {
+        socket.emit("history",{key: key, begin:d_start_s, transformation:{mode:["avr"],span:15*60}}, (response) => {
+            if(!has_data(response)){
+                return;
+            }
             var data={
                 name: key,
                 mode:'lines',
@@ -36,7 +39,7 @@ function history(parameter,  rooms){
             }
              response.forEach((element) => {
                 data.x.push(ts_to_date(element.ts))
-                data.y.push(element.value)
+                data.y.push(element.avr)
             });
             Plotly.addTraces( place_holder_div, [data]);
         });
@@ -66,5 +69,10 @@ function page_start_up(){
      console.log(rooms,graphs);
      graphs.forEach((paramentr) => {
         history(paramentr,rooms);
+     } );
+     // Per-room comparison graph (today vs yesterday vs 7-day min/max),
+     // same as #id_comp_outdoor.temperature on the outdoors page.
+     rooms.forEach((room) => {
+        history_comparation(room+".temperature", room+" Температура", true);
      } );
 }

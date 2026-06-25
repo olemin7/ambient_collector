@@ -80,8 +80,8 @@ class TBot:
         if not self.is_enabled():
             log.info("Disabled")
             return
-        if not 'subscribers' in self.__config:
-            self.__config['subscribers'] = set()
+        # subscribers may be absent or persisted as a list; normalize to a set.
+        self.__config['subscribers'] = set(self.__config.get('subscribers') or [])
 
         self.__tbot = AsyncTeleBot(self.__config["token"])
         await self.__tbot.delete_my_commands()

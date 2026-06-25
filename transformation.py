@@ -11,7 +11,7 @@ def to_type(value, data_type):
         elif data_type == "float2":
             return round(float(value), 2)
         elif data_type == "int":
-            return int(value)
+            return int(float(value))
     return value
 
 def transformation(vals, arg: object) -> list[dict]:

@@ -9,7 +9,7 @@ log = logging.getLogger('logger')
 
 class MQTTModule:
     def __init__(self, host: str, port: int, topics: set, on_msg_cb: Callable[[str, str], None]):
-        self._client = mqtt.Client()
+        self._client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
         self._client.on_log = self._on_log
         self._client.on_message = self._on_message
         self._client.on_connect = self._on_connect
@@ -17,7 +17,9 @@ class MQTTModule:
         self.__on_msg_cb = on_msg_cb
         self._subscription = topics
         log.debug(f"topics: {topics}")
-        self._client.connect(host, port)
+        # connect_async + loop_start lets the network thread keep retrying if the
+        # broker is unreachable at startup instead of raising and killing the app.
+        self._client.connect_async(host, port)
         self._client.loop_start()
 
     def _on_log(self, client, userdata, level, buf):
@@ -31,16 +33,16 @@ class MQTTModule:
         if message.retain == 1:
             log.info("This is a retained message")
 
-    def _on_connect(self, client, userdata, flags, rc):
-        if rc == 0:
+    def _on_connect(self, client, userdata, flags, reason_code, properties=None):
+        if reason_code == 0:
             log.info("connected OK")
             for topic in self._subscription:
                 self._client.subscribe(topic)
         else:
-            log.info("Bad connection Returned code=", rc)
+            log.warning("Bad connection, reason code=%s", reason_code)
 
-    def _on_disconnect(self, client, userdata, rc):
-        log.info(f"disconnecting reason {str(rc)}")
+    def _on_disconnect(self, client, userdata, flags, reason_code, properties=None):
+        log.info(f"disconnecting reason {reason_code}")
 
 
 class MQTTThings(MQTTModule):
@@ -92,8 +94,8 @@ class MQTTAdvertisement(MQTTModule):
                 self.__known_thing_by_mac[thing["mac"]] = thing["name"]
         super().__init__(config_mqtt["server"], config_mqtt["port"], [MQTTAdvertisement.TOPIC_ADVERTISEMENT], self.__on_message)
 
-    def _on_connect(self, client, userdata, flags, rc):
-        super()._on_connect(client, userdata, flags, rc)
+    def _on_connect(self, client, userdata, flags, reason_code, properties=None):
+        super()._on_connect(client, userdata, flags, reason_code, properties)
         log.debug(r"send advertisement")
         self._client.publish(MQTTAdvertisement.TOPIC_CMD, MQTTAdvertisement.CMD_ADVERTISEMENT)
 
